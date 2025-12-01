@@ -152,26 +152,26 @@ class Login extends CI_Controller
     {
         // Get reCAPTCHA keys from SettingsModel (o_srms_settings → srms_settings)
         list($recaptcha_site_key, $recaptcha_secret_key) = $this->SettingsModel->get_recaptcha_keys();
-
-        // Disable reCAPTCHA on localhost/127.0.0.1 to avoid domain mismatch errors.
         $host = $this->input->server('HTTP_HOST');
-        $isLocalHost = in_array($host, ['localhost', '127.0.0.1'], true);
-        if ($isLocalHost) {
-            $recaptcha_site_key   = null;
-            $recaptcha_secret_key = null;
+        $recaptcha_notice = '';
+        if (empty($recaptcha_site_key) || empty($recaptcha_secret_key)) {
+            $recaptcha_notice = 'reCAPTCHA keys are missing. Add site_key and sec_key in o_srms_settings.';
+        } else {
+            $recaptcha_notice = 'reCAPTCHA is enabled. Make sure host "' . $host . '" is allowed in your Google keys.';
         }
 
         if ($this->input->post('register')) {
-            // Basic validation rules (showable via validation_errors in the view)
-            $this->form_validation->set_rules('empPosition', 'Position', 'required');
+            // Basic validation rules for current DeComponents user schema
             $this->form_validation->set_rules('fName', 'First Name', 'required');
             $this->form_validation->set_rules('lName', 'Last Name', 'required');
             $this->form_validation->set_rules('empEmail', 'Email', 'required|valid_email');
             $this->form_validation->set_rules('password', 'Password', 'required|min_length[6]');
+            $this->form_validation->set_rules('confirm_password', 'Confirm Password', 'required|matches[password]');
 
             if ($this->form_validation->run() === FALSE) {
                 $data = [
                     'recaptcha_site_key' => $recaptcha_site_key,
+                    'recaptcha_notice'   => $recaptcha_notice,
                 ];
                 return $this->load->view('registration_form', $data);
             }
@@ -191,7 +191,6 @@ class Login extends CI_Controller
                 list($ok, $errors) = $this->verify_recaptcha($recaptcha_secret_key, $recaptchaResponse);
 
                 if (!$ok) {
-                    // While debugging, you can display error codes to see the reason.
                     $codes = !empty($errors) ? ' (' . htmlspecialchars(implode(', ', $errors), ENT_QUOTES, 'UTF-8') . ')' : '';
                     $this->session->set_flashdata(
                         'msg',
@@ -202,84 +201,59 @@ class Login extends CI_Controller
                 }
             }
 
-            // --- end reCAPTCHA block ---
-
-            // Helper for nullable fields
-            $null_if_empty = function ($v) {
-                $v = trim((string) $v);
-                return ($v === '') ? null : $v;
-            };
-
-            // Gather and sanitize user input
-            $IDNumber    = $this->input->post('IDNumber', true);
-            $FirstName   = strtoupper($null_if_empty($this->input->post('fName', true)));
-            $MiddleName  = strtoupper($null_if_empty($this->input->post('mName', true)));
-            $LastName    = strtoupper($null_if_empty($this->input->post('lName', true)));
-            // Force position to Customer regardless of submitted value.
-            $empPosition = 'Customer';
-            $empSection  = $null_if_empty($this->input->post('empSection', true));
-            $empEmail    = trim($this->input->post('empEmail'));
-
-            $username       = $empEmail; // you’re using email as username
-            $password       = $this->input->post('password');
+            // Gather and sanitize user input (matches users table: FirstName, MiddleName, LastName, email, password, profile_picture, role, created_at)
+            $FirstName   = trim($this->input->post('fName', true));
+            $MiddleName  = trim((string)$this->input->post('mName', true));
+            $LastName    = trim($this->input->post('lName', true));
+            $email       = trim($this->input->post('empEmail', true));
+            $password    = (string)$this->input->post('password');
             $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
-            $dateCreated = date('Y-m-d');
-
-            // Check if the user already exists in either table (by username)
-            $exists = 0;
-            $this->db->where('username', $username);
-            $exists += $this->db->get('o_users')->num_rows();
-
-            $this->db->where('username', $username);
-            $exists += $this->db->get('users')->num_rows();
-
+            // Check if the user already exists by email
+            $exists = $this->db->where('email', $email)->get('users')->num_rows();
             if ($exists > 0) {
                 $this->session->set_flashdata(
                     'msg',
-                    '<div class="alert alert-danger text-center"><b>This account is already taken. Please choose a different username.</b></div>'
+                    '<div class="alert alert-danger text-center"><b>This email already has an account.</b></div>'
                 );
-                // 🔧 fix: use correct route (no "Registration" controller)
                 redirect('Login/registration');
                 return;
             }
 
-            // Start transaction and insert into BOTH tables so records stay in sync
-            $this->db->trans_start();
-
             $data = [
-                'username'    => $username,
-                'password'    => $hashed_password,
-                'position'    => 'Customer',
-                'fName'       => $FirstName,
-                'mName'       => $MiddleName,
-                'lName'       => $LastName,
-                'email'       => $empEmail,
-                'avatar'      => 'avatar.png',
-                'acctStat'    => 'active',
-                'dateCreated' => $dateCreated,
-                'empPosition' => $empPosition,
-                'IDNumber'    => $IDNumber,
-                'empSection'  => $empSection,
-                'settingsID'  => '1',
+                'FirstName'       => $FirstName,
+                'MiddleName'      => $MiddleName === '' ? null : $MiddleName,
+                'LastName'        => $LastName,
+                'email'           => $email,
+                'password'        => $hashed_password,
+                'profile_picture' => 'upload/profile/avatar.png',
+                'role'            => 'customer',
+                'created_at'      => date('Y-m-d H:i:s'),
             ];
 
-            $this->db->insert('o_users', $data);
-            $this->db->insert('users',   $data);
+            $inserted = $this->db->insert('users', $data);
 
-            $this->db->trans_complete();
-
-            if ($this->db->trans_status() === FALSE) {
+            if (!$inserted) {
                 $this->session->set_flashdata(
                     'message',
                     '<div class="alert alert-danger text-center"><b>Registration failed. Please try again.</b></div>'
                 );
             } else {
+                $userId = $this->db->insert_id();
+                // Auto-login to streamline checkout flow
+                $displayName = trim($LastName . ', ' . $FirstName);
+                $this->session->set_userdata([
+                    'ez_user_id'     => $userId,
+                    'level'          => 'customer',
+                    'ez_user_name'   => $displayName !== '' ? $displayName : $email,
+                    'ez_user_avatar' => 'upload/profile/avatar.png',
+                ]);
+
                 $this->session->set_flashdata(
                     'message',
                     '<div class="alert alert-success text-center"><b>Your account has been created successfully.</b></div>'
                 );
-                redirect('Login');
+                redirect('products');
                 return;
             }
         }
@@ -287,7 +261,7 @@ class Login extends CI_Controller
         // Always pass site key to view (even on first load)
         $data = [
             'recaptcha_site_key' => $recaptcha_site_key,
-            'recaptcha_notice'   => $isLocalHost ? 'reCAPTCHA skipped on localhost (domain not whitelisted).' : '',
+            'recaptcha_notice'   => $recaptcha_notice,
         ];
         $this->load->view('registration_form', $data);
     }
@@ -295,115 +269,61 @@ class Login extends CI_Controller
 
     function auth()
     {
-        $username = $this->input->post('username', TRUE);
-        $password = $this->input->post('password', TRUE); // Get plain password
+        $emailInput = $this->input->post('email', TRUE);
+        if ($emailInput === null) {
+            $emailInput = $this->input->post('username', TRUE); // fallback for old field name
+        }
+        $email = trim((string)$emailInput);
+        $password = $this->input->post('password', TRUE);
 
-        // Validate user credentials and get the stored hashed password
-        $validate = $this->Login_model->validate($username);
+        // Validate user credentials against the users table
+        $query = $this->Login_model->validate($email);
 
-        if ($validate->num_rows() > 0) {
-            $data = $validate->row_array();
-            $stored_hashed_password = $data['password']; // password column from DB
-
-            // Verify the password supporting modern hashes (password_hash)
-            // and fallback to legacy sha1. Prefer `password_verify()` whenever
-            // available so we don't rely on specific hash prefixes. If a legacy
-            // sha1 password is detected and the login is successful, rehash the
-            // password with bcrypt and update both user tables so future logins
-            // use the stronger hash.
+        if ($query->num_rows() > 0) {
+            $data = $query->row_array();
+            $stored_hashed_password = $data['password'] ?? '';
 
             $isValid = false;
-            $usedLegacySha1 = false;
 
-            // First, try password_verify if available and stored hash is a string
-            if (function_exists('password_verify') && is_string($stored_hashed_password) && $stored_hashed_password !== '') {
-                if (password_verify($password, $stored_hashed_password)) {
+            if (is_string($stored_hashed_password) && $stored_hashed_password !== '') {
+                if (function_exists('password_verify') && password_verify($password, $stored_hashed_password)) {
                     $isValid = true;
-
-                    // If hash needs rehash (algorithm options changed), rehash it.
-                    if (function_exists('password_needs_rehash') && password_needs_rehash($stored_hashed_password, PASSWORD_BCRYPT)) {
-                        $newHash = password_hash($password, PASSWORD_BCRYPT);
-                        $this->db->where('username', $data['username']);
-                        $this->db->update('o_users', ['password' => $newHash]);
-                        $this->db->where('username', $data['username']);
-                        $this->db->update('users', ['password' => $newHash]);
-                    }
-                }
-            }
-
-            // If password_verify didn't validate, try legacy sha1 comparison
-            if (! $isValid && is_string($stored_hashed_password) && $stored_hashed_password !== '') {
-                if (sha1($password) === $stored_hashed_password) {
+                } elseif ($stored_hashed_password === $password) {
+                    // Legacy plain-text fallback: immediately rehash
                     $isValid = true;
-                    $usedLegacySha1 = true;
-
-                    // Rehash using bcrypt and update both tables so we move away
-                    // from sha1 on the next login.
                     if (function_exists('password_hash')) {
                         $newHash = password_hash($password, PASSWORD_BCRYPT);
-                        $this->db->where('username', $data['username']);
-                        $this->db->update('o_users', ['password' => $newHash]);
-                        $this->db->where('username', $data['username']);
-                        $this->db->update('users', ['password' => $newHash]);
+                        $this->db->where('email', $email)->update('users', ['password' => $newHash]);
+                        $data['password'] = $newHash;
                     }
                 }
             }
 
             if ($isValid) {
-                $username = $data['username'];
-                $fname = $data['fName'];
-                $mname = $data['mName'];
-                $lname = $data['lName'];
-                $avatar = $data['avatar'];
-                $email = $data['email'];
-                $level = $data['position'];
-                $IDNumber = $data['IDNumber'];
-                $acctStat = $data['acctStat'];
-
-                if ($acctStat === 'active') {
-                    // User data to be stored in session
-                    $user_data = array(
-                        'username'  => $username,
-                        'fname'     => $fname,
-                        'mname'     => $mname,
-                        'lname'     => $lname,
-                        'avatar'    => $avatar,
-                        'email'     => $email,
-                        'level'     => $level,
-                        'IDNumber'  => $IDNumber,
-                        'logged_in' => TRUE
-                    );
-                    $this->session->set_userdata($user_data);
-
-                    // Redirect based on user level
-                    switch ($level) {
-                        case 'BAC Secretariat':
-                            redirect('page/admin');
-                            break;
-                        case 'Employee':
-                            redirect('page/user');
-                            break;
-                        case 'Super Admin':
-                            redirect('page/superAdmin');
-                            break;
-                        case 'Property Custodian':
-                            redirect('page/p_custodian');
-                            break;
-                        default:
-                            // Handle unexpected levels
-                            $this->session->set_flashdata('message', 'Unauthorized access.');
-                            redirect('login');
-                    }
-                } else {
-                    $this->session->set_flashdata('message', 'Your account is not active. Please contact support.');
-                    redirect('login');
+                $avatar = !empty($data['profile_picture']) ? $data['profile_picture'] : 'upload/profile/avatar.png';
+                $displayName = trim(($data['FirstName'] ?? '') . ' ' . ($data['MiddleName'] ?? '') . ' ' . ($data['LastName'] ?? ''));
+                if ($displayName === '') {
+                    $displayName = $data['email'] ?? 'Customer';
                 }
+                $role = !empty($data['role']) ? $data['role'] : 'customer';
+
+                $this->session->set_userdata([
+                    'ez_user_id'     => $data['id'],
+                    'level'          => $role,
+                    'ez_user_name'   => $displayName,
+                    'ez_user_avatar' => $avatar,
+                    'email'          => $data['email'] ?? '',
+                    'logged_in'      => true,
+                ]);
+
+                // Redirect all users to products page so they can continue shopping
+                redirect('products');
             } else {
-                $this->session->set_flashdata('danger', 'The username or password is incorrect!');
+                $this->session->set_flashdata('danger', 'The email or password is incorrect!');
                 redirect('login');
             }
         } else {
-            $this->session->set_flashdata('danger', 'The username or password is incorrect!');
+            $this->session->set_flashdata('danger', 'The email or password is incorrect!');
             redirect('login');
         }
     }
@@ -432,29 +352,15 @@ class Login extends CI_Controller
             return;
         }
 
-        // Check if email exists in o_users table
-        $q1 = $this->db->select('email')->from('o_users')->where('email', $email)->get();
-        if ($q1->num_rows() > 0) {
-            echo json_encode(['exists' => true]);
-            return;
-        }
-
-        // Check if email exists in users table
-        $q2 = $this->db->select('email')->from('users')->where('email', $email)->get();
-        if ($q2->num_rows() > 0) {
-            echo json_encode(['exists' => true]);
-            return;
-        }
-
-        // Email does not exist in either table
-        echo json_encode(['exists' => false]);
+        $exists = $this->db->select('email')->from('users')->where('email', $email)->get()->num_rows() > 0;
+        echo json_encode(['exists' => $exists]);
     }
 
     function forgot()
     {
         // Show form on GET
         if ($this->input->method() === 'get') {
-            $data['page_title'] = 'Forgot Password - BERPS';
+            $data['page_title'] = 'Forgot Password - DeComponents';
             $this->load->view('auth_forgot', $data);
             return;
         }
@@ -463,7 +369,7 @@ class Login extends CI_Controller
         $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
 
         if ($this->form_validation->run() === FALSE) {
-            $data['page_title'] = 'Forgot Password - BERPS';
+            $data['page_title'] = 'Forgot Password - DeComponents';
             $this->load->view('auth_forgot', $data);
             return;
         }
@@ -498,7 +404,7 @@ class Login extends CI_Controller
     {
         // GET: from email link
         if ($this->input->method() === 'get') {
-            $username = trim($this->input->get('u', TRUE));
+            $username = trim($this->input->get('u', TRUE)); // email in this flow
 
             if ($username === '') {
                 $this->session->set_flashdata('error', 'Invalid password reset link.');
@@ -514,7 +420,7 @@ class Login extends CI_Controller
                 return;
             }
 
-            $data['page_title'] = 'Reset Password - BERPS';
+            $data['page_title'] = 'Reset Password - DeComponents';
             $data['username']   = $username;
             $this->load->view('auth_reset', $data);
             return;
@@ -524,10 +430,10 @@ class Login extends CI_Controller
         $this->form_validation->set_rules('password',  'New Password', 'required|min_length[8]');
         $this->form_validation->set_rules('password2', 'Confirm Password', 'required|matches[password]');
 
-        $username = trim($this->input->post('username', TRUE));
+        $username = trim($this->input->post('username', TRUE)); // email
 
         if ($this->form_validation->run() === FALSE) {
-            $data['page_title'] = 'Reset Password - BERPS';
+            $data['page_title'] = 'Reset Password - DeComponents';
             $data['username']   = $username;
             $this->load->view('auth_reset', $data);
             return;

@@ -649,7 +649,8 @@ class Decomponents extends CI_Controller
             $data['user'] = $this->Decomponents_model->get_user_by_id($userId);
         }
 
-        $this->load->view('decomponents/index', $data);
+        // Use the public products view so customers can browse and checkout.
+        $this->load->view('pages/Products', $data);
     }
 
     /**

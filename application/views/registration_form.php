@@ -188,13 +188,13 @@
 
               <!-- Logo -->
               <div class="login-brand">
-                <img src="<?= base_url(); ?>assets/images/logo/logo.png" alt="BAC Portal">
+                <img src="<?= base_url(); ?>assets/images/logo/logo.png" alt="DeComponents">
               </div>
 
               <!-- Title + subtitle -->
               <div class="login-title">
-                <h4>Create Account</h4>
-                <small>Fill in your details to create a new BAC account.</small>
+                <h4>Create your DeComponents account</h4>
+                <small>Fill in your details to start shopping.</small>
               </div>
 
               <!-- Flash messages -->
@@ -225,26 +225,17 @@
                 </div>
               <?php endif; ?>
 
+              <?php if (!empty($recaptcha_notice)): ?>
+                <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert">
+                  <?= htmlspecialchars($recaptcha_notice, ENT_QUOTES, 'UTF-8'); ?>
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              <?php endif; ?>
+
               <!-- Registration form -->
               <form action="<?= site_url('Login/registration'); ?>" method="post" class="mt-3">
-
-                <!-- Position (Customer only, read-only) -->
-                <div class="form-floating-label">
-                  <span class="input-icon">
-                    <i class="mdi mdi-briefcase-outline"></i>
-                  </span>
-                  <input
-                    type="text"
-                    name="empPosition"
-                    class="form-control"
-                    value="Customer"
-                    readonly
-                    placeholder=" ">
-                  <label>Position</label>
-                </div>
-
-                <!-- Employee Number (not required for Customer accounts) -->
-                <input type="hidden" name="IDNumber" value="">
 
                 <!-- First Name & Middle Name (two columns) -->
                 <div class="row-two-cols">
@@ -270,10 +261,9 @@
                       type="text"
                       name="mName"
                       class="form-control"
-                      required
                       placeholder=" "
                       value="<?= set_value('mName'); ?>">
-                    <label>Middle Name</label>
+                    <label>Middle Name (optional)</label>
                   </div>
                 </div>
 
@@ -310,20 +300,6 @@
                 <!-- Email validation feedback -->
                 <div id="emailFeedback" class="small mb-2" style="display: none;"></div>
 
-                <!-- Section/Department (full width, hidden for Bidders) -->
-                <div class="form-floating-label" id="empSectionWrapper" style="display: <?= (set_value('empPosition') == 'Bidder') ? 'none' : 'block'; ?>;">
-                  <span class="input-icon">
-                    <i class="mdi mdi-office-building-outline"></i>
-                  </span>
-                  <input
-                    type="text"
-                    name="empSection"
-                    class="form-control"
-                    placeholder=" "
-                    value="<?= set_value('empSection'); ?>">
-                  <label>Section/Department</label>
-                </div>
-
                 <!-- Password -->
                 <div class="form-floating-label">
                   <span class="input-icon">
@@ -344,6 +320,26 @@
                   </span>
                 </div>
 
+                <!-- Confirm Password -->
+                <div class="form-floating-label">
+                  <span class="input-icon">
+                    <i class="mdi mdi-lock-check-outline"></i>
+                  </span>
+                  <input
+                    type="password"
+                    id="regPasswordConfirm"
+                    name="confirm_password"
+                    class="form-control"
+                    required
+                    minlength="8"
+                    placeholder=" "
+                    autocomplete="new-password">
+                  <label>Confirm Password</label>
+                  <span class="toggle-password" data-target="#regPasswordConfirm">
+                    <i class="mdi mdi-eye-outline"></i>
+                  </span>
+                </div>
+
                 <small class="text-muted d-block mb-2">Password must be at least 8 characters long.</small>
 
                 <!-- reCAPTCHA widget (if site key provided) -->
@@ -354,10 +350,7 @@
                   </div>
                 <?php else: ?>
                   <div class="alert alert-warning mt-2 mb-2" role="alert">
-                    <strong>reCAPTCHA not configured.</strong> The registration form will show a captcha if your site key is saved in the <code>srms_settings</code> table.
-                    <div class="mt-1">Add the keys using an SQL update (example):</div>
-                    <pre class="small">UPDATE srms_settings SET recaptcha_site_key = 'YOUR_SITE_KEY', recaptcha_secret_key = 'YOUR_SECRET_KEY' WHERE id = 1;</pre>
-                    <div class="mt-1">If your settings use other column names, the code looks for: <code>recaptcha_site_key</code>, <code>recaptcha_site</code>, <code>google_site_key</code>, <code>site_key</code>.</div>
+                    <strong>reCAPTCHA not configured.</strong> Add your site_key and sec_key in <code>o_srms_settings</code> (or <code>srms_settings</code>) to enable the captcha for signups.
                   </div>
                 <?php endif; ?>
 
@@ -464,23 +457,6 @@
         }, 500);
       });
 
-      // Hide employee number and section/department when Position is Bidder
-      function toggleEmployeeFields() {
-        var pos = $('select[name="empPosition"]').val();
-        if (pos === 'Bidder') {
-          $('#empNumberField').hide();
-          $('#empSectionWrapper').hide();
-          $('input[name="IDNumber"]').val('');
-          $('input[name="empSection"]').val('');
-        } else {
-          $('#empNumberField').show();
-          $('#empSectionWrapper').show();
-        }
-      }
-
-      $('select[name="empPosition"]').on('change', toggleEmployeeFields);
-      // Initialize on load
-      toggleEmployeeFields();
     });
   </script>
 

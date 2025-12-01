@@ -169,13 +169,13 @@
 
               <!-- Optional logo -->
               <div class="login-brand">
-                <img src="<?= base_url(); ?>assets/images/logo/logo.png" alt="BAC Portal">
+                <img src="<?= base_url(); ?>assets/images/logo/logo.png" alt="DeComponents">
               </div>
 
               <!-- Title + subtitle -->
               <div class="login-title">
-                <h4>BAC Procurement Portal</h4>
-                <small>Sign in with your assigned account credentials.</small>
+                <h4>Welcome back to DeComponents</h4>
+                <small>Sign in to continue shopping and checkout.</small>
               </div>
 
               <!-- Flash messages -->
@@ -231,13 +231,13 @@
                     <i class="mdi mdi-email-outline"></i>
                   </span>
                   <input
-                    type="text"
-                    name="username"
+                    type="email"
+                    name="email"
                     class="form-control"
                     required
-                    autocomplete="username"
+                    autocomplete="email"
                     placeholder=" ">
-                  <label>Email / Username</label>
+                  <label>Email</label>
                 </div>
 
                 <!-- Password -->
