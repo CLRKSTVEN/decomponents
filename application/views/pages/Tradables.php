@@ -37,7 +37,7 @@
 
                 <div class="decom-trade-item">
                     <div class="decom-trade-image">
-                        <img src="<?php echo base_url('Pictures/'); ?> alt=" RTX 4070">
+                        <img src="<?php echo base_url('Pictures/4070Ti.png'); ?>" alt="RTX 4070Ti">
                     </div>
                     <div class="decom-trade-content">
                         <h2>RTX 4070Ti</h2>
@@ -48,7 +48,7 @@
 
                 <div class="decom-trade-item">
                     <div class="decom-trade-image">
-                        <img src="<?php echo base_url('Pictures/'); ?> alt=" RTX 4070">
+                        <img src="<?php echo base_url('Pictures/2080Ti.png'); ?>" alt="RTX 2080Ti">
                     </div>
                     <div class="decom-trade-content">
                         <h2>RTX 2080Ti</h2>
@@ -68,11 +68,11 @@
             <a href="<?php echo site_url("contact"); ?>">CONTACT</a>
         </nav>
         <div class="decom-social-links">
-            <a href="https://www.youtube.com/@DeComponents" target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href=" https://www.facebook.com/profile.php?id=61568617385907"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href=" https://www.tiktok.com/@decomponents"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href=" https://www.linkedin.com/in/de-components-934ba3337/"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href=" #"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
+            <a href="https://www.youtube.com/@DeComponents" target="_blank"><img src="<?php echo base_url('Pictures/Yutob.webp'); ?>" alt="YouTube"></a>
+            <a href="https://www.facebook.com/profile.php?id=61568617385907" target="_blank"><img src="<?php echo base_url('Pictures/Fishbuk.webp'); ?>" alt="Facebook"></a>
+            <a href="https://www.tiktok.com/@decomponents" target="_blank"><img src="<?php echo base_url('Pictures/Tiktook.png'); ?>" alt="TikTok"></a>
+            <a href="https://www.linkedin.com/in/de-components-934ba3337/" target="_blank"><img src="<?php echo base_url('Pictures/linkedin.png'); ?>" alt="LinkedIn"></a>
+            <a href="#" target="_blank"><img src="<?php echo base_url('Pictures/Instagram.png'); ?>" alt="Instagram"></a>
         </div>
         <div class=" decom-contact-email">
                 <a href="mailto:decomponents.24@gmail.com">DeComponents.24@Gmail.com</a>

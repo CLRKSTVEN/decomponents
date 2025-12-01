@@ -29,15 +29,15 @@
     <main class="decom-main">
         <div class="decom-container">
             <div class="decom-showcase-hero">
-                <img src="<?php echo base_url('Pictures/'); ?>> 
-                <div class=" decom-container">
+                <img src="<?php echo base_url('Pictures/GPU.jpg'); ?>" alt="GPU News">
+                <div class="decom-container">
                 <h1 class="decom-AboutUS-header">Latest News</h1>
 
             </div>
             <div class="decom-showcase-products">
                 <div class="decom-showcase-item">
                     <div class="decom-showcase-image">
-                        <img src="<?php echo base_url('Pictures/'); ?>>
+                        <img src="<?php echo base_url('Pictures/RTX50.jpg'); ?>" alt="RTX 50 Series">
                     </div>
                     <div class=" decom-showcase-content">
                         <h2>NVIDIA GeForce 50 Series: What to Expect from the Upcoming Big Tech GPU Revolution</h2>
@@ -49,7 +49,7 @@
 
                 <div class="decom-showcase-item">
                     <div class="decom-showcase-image">
-                        <img src="<?php echo base_url('Pictures/'); ?>>
+                        <img src="<?php echo base_url('Pictures/RAEDON7000.jpg'); ?>" alt="Radeon 7000">
                     </div>
                     <div class=" decom-showcase-content">
                         <h2>AMD Radeon’s Latest Graphics Cards: The Future of Gaming and Content Creation</h2>
@@ -72,11 +72,11 @@
             <a href="<?php echo site_url("contact"); ?>">CONTACT</a>
         </nav>
         <div class="decom-social-links">
-            <a href="https://www.youtube.com/@DeComponents" target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href=" https://www.facebook.com/profile.php?id=61568617385907"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href=" https://www.tiktok.com/@decomponents"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href=" https://www.linkedin.com/in/de-components-934ba3337/"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href=" #"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
+            <a href="https://www.youtube.com/@DeComponents" target="_blank"><img src="<?php echo base_url('Pictures/Yutob.webp'); ?>" alt="YouTube"></a>
+            <a href="https://www.facebook.com/profile.php?id=61568617385907" target="_blank"><img src="<?php echo base_url('Pictures/Fishbuk.webp'); ?>" alt="Facebook"></a>
+            <a href="https://www.tiktok.com/@decomponents" target="_blank"><img src="<?php echo base_url('Pictures/Tiktook.png'); ?>" alt="TikTok"></a>
+            <a href="https://www.linkedin.com/in/de-components-934ba3337/" target="_blank"><img src="<?php echo base_url('Pictures/linkedin.png'); ?>" alt="LinkedIn"></a>
+            <a href="#" target="_blank"><img src="<?php echo base_url('Pictures/Instagram.png'); ?>" alt="Instagram"></a>
         </div>
         <div class=" decom-contact-email">
                 <a href="mailto:decomponents.24@gmail.com">DeComponents.24@Gmail.com</a>
