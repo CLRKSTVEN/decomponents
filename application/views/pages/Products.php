@@ -19,6 +19,58 @@
         window.DE_AFTER_LOGIN_URL = <?php echo json_encode($afterLoginUrl); ?>;
         window.DE_ADD_TO_CART_URL = <?php echo json_encode($addToCartUrl); ?>;
     </script>
+    <style>
+        .de-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999
+        }
+
+        .de-modal {
+            background: #fff;
+            padding: 18px;
+            border-radius: 8px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.24);
+            font-family: inherit
+        }
+
+        .de-modal h3 {
+            margin: 0 0 8px;
+            font-size: 18px
+        }
+
+        .de-modal p {
+            margin: 0 0 12px;
+            color: #333
+        }
+
+        .de-modal .de-modal-actions {
+            text-align: right
+        }
+
+        .de-btn {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background: #f6f6f6;
+            color: #222;
+            cursor: pointer;
+            margin-left: 8px
+        }
+
+        .de-btn.primary {
+            background: #0b74de;
+            color: #fff;
+            border-color: #0b74de
+        }
+    </style>
 </head>
 
 <body>
@@ -91,12 +143,42 @@
             <p class="decom-empty" style="<?php echo empty($products) ? '' : 'display:none;'; ?>">No products found in this category. Add images to the products/ folder to show them here.</p>
         </div>
 
-        <div class="cartTab">
-            <h1>Shopping Cart</h1>
-            <div class="listCart"></div>
-            <div class="btn">
-                <button class="close">CLOSE</button>
-                <button class="checkOut">Check Out</button>
+        <!-- Right-side cart panel removed (checkout now uses modal) -->
+
+        <!-- Login required modal -->
+        <div id="loginModal" class="de-modal-backdrop" aria-hidden="true">
+            <div class="de-modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+                <h3 id="loginModalTitle">Login required</h3>
+                <p>You need to login first to continue to checkout.</p>
+                <div class="de-modal-actions">
+                    <button class="de-btn loginClose">Close</button>
+                    <button class="de-btn primary loginNow">Login</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add-to-cart confirmation modal -->
+        <div id="addCartModal" class="de-modal-backdrop" aria-hidden="true">
+            <div class="de-modal" role="dialog" aria-modal="true" aria-labelledby="addCartModalTitle">
+                <h3 id="addCartModalTitle">Added to cart</h3>
+                <p id="addCartModalMsg">Product added to your cart.</p>
+                <div class="de-modal-actions">
+                    <button class="de-btn continueShopping">Continue</button>
+                    <button class="de-btn primary viewCart">View Cart</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout quantity selection modal -->
+        <div id="checkoutQtyModal" class="de-modal-backdrop" aria-hidden="true">
+            <div class="de-modal" role="dialog" aria-modal="true" aria-labelledby="checkoutQtyTitle">
+                <h3 id="checkoutQtyTitle">Select quantities</h3>
+                <p id="checkoutQtyHelp">Adjust quantities for the items in your cart before checkout.</p>
+                <div id="checkoutItemsList" style="max-height:260px;overflow:auto;margin-bottom:12px"></div>
+                <div class="de-modal-actions">
+                    <button class="de-btn checkoutQtyClose">Close</button>
+                    <button class="de-btn primary checkoutQtyProceed">Proceed to Payment</button>
+                </div>
             </div>
         </div>
 

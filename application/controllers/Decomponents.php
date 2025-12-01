@@ -39,7 +39,7 @@ class Decomponents extends CI_Controller
         // Accept both legacy capitalized and lowercase roles.
         if (!in_array(strtolower((string)$level), ['admin'], true)) {
             $this->session->set_flashdata('error', 'Admin access required.');
-            redirect('Decomponents/login');
+            redirect('home_page.php');
             exit;
         }
     }
@@ -254,7 +254,7 @@ class Decomponents extends CI_Controller
         // User cancelled or Google returned an error
         if (!empty($error)) {
             $this->session->set_flashdata('error', 'Google sign-in was cancelled or failed: ' . $error);
-            redirect('Decomponents/login');
+            redirect('home_page.php');
             return;
         }
 
@@ -263,7 +263,7 @@ class Decomponents extends CI_Controller
         if (!$state || !$savedState || $state !== $savedState) {
             $this->session->unset_userdata('google_oauth_state');
             $this->session->set_flashdata('error', 'Invalid Google login session. Please try again.');
-            redirect('Decomponents/login');
+            redirect('home_page.php');
             return;
         }
 
@@ -291,7 +291,7 @@ class Decomponents extends CI_Controller
                 $errorMsg .= ' (' . $e->getMessage() . ')';
             }
             $this->session->set_flashdata('error', $errorMsg);
-            redirect('Decomponents/login');
+            redirect('home_page.php');
             return;
         }
 
@@ -305,7 +305,7 @@ class Decomponents extends CI_Controller
 
         if (empty($email)) {
             $this->session->set_flashdata('error', 'Google did not provide an email address.');
-            redirect('Decomponents/login');
+            redirect('home_page.php');
             return;
         }
 
@@ -351,7 +351,7 @@ class Decomponents extends CI_Controller
             $newId = $this->Decomponents_model->create_user($userData);
             if (!$newId) {
                 $this->session->set_flashdata('error', 'Unable to create an account from your Google profile.');
-                redirect('Decomponents/login');
+                redirect('home_page.php');
                 return;
             }
 
@@ -1174,7 +1174,7 @@ class Decomponents extends CI_Controller
             }
         }
 
-        $this->load->view('decomponents/login', $data);
+        return redirect('home_page.php');
     }
 
     // 4) SIGNUP PAGE
@@ -1340,7 +1340,7 @@ class Decomponents extends CI_Controller
         $userId = $this->session->userdata('ez_user_id');
         if (!$userId) {
             $this->session->set_flashdata('error', 'Please log in to view your profile.');
-            return redirect('Decomponents/login');
+            return redirect('home_page.php');
         }
 
         $user = $this->Decomponents_model->get_user_by_id($userId);
@@ -1369,7 +1369,7 @@ class Decomponents extends CI_Controller
         $userId = $this->session->userdata('ez_user_id');
         if (!$userId) {
             $this->session->set_flashdata('error', 'Please log in to update your profile.');
-            return redirect('Decomponents/login');
+            return redirect('home_page.php');
         }
 
         $address = trim($this->input->post('address', true));
@@ -1471,18 +1471,20 @@ class Decomponents extends CI_Controller
             $count += (int)$item['qty'];
         }
 
-        // Persist a cart entry as a lightweight order record for all users (guest-safe).
+        // Persist a cart entry as a lightweight order record only for logged-in users.
+        // Guests keep cart in session only; avoid creating DB rows for anonymous activity.
         // Swallow DB errors so add_to_cart never 500s on mismatched schemas.
         $orderSaved = true;
-        if ($id) {
+        if ($id && $userId) {
             try {
                 $orderId = $this->Decomponents_model->create_order([
-                    'user_id'          => $userId ?: null,
+                    'user_id'          => $userId,
                     'full_name'        => is_object($user) ? ($user->fullname ?? '') : '',
                     'email'            => is_object($user) ? ($user->email ?? '') : '',
                     'shipping_address' => '',
                     'payment_method'   => 'cod',      // valid enum value
                     'status'           => 'pending',  // valid enum value
+                    'quantity'         => $qty,
                     'total_amount'     => $price,
                     'created_at'       => date('Y-m-d H:i:s'),
                 ]);
@@ -1667,6 +1669,7 @@ class Decomponents extends CI_Controller
                 'shipping_address' => $address,
                 'payment_method'   => $pay_method,
                 'status'           => 'pending',
+                'quantity'         => (int)($orderedItem['qty'] ?? 1),
                 'total_amount'     => $total,
                 'created_at'       => date('Y-m-d H:i:s'),
             ];
@@ -1805,7 +1808,7 @@ class Decomponents extends CI_Controller
         $userId = $this->session->userdata('ez_user_id');
         if (!$userId) {
             $this->session->set_flashdata('error', 'Please log in to view your orders.');
-            return redirect('Decomponents/login');
+            return redirect('home_page.php');
         }
 
         $orders = $this->Decomponents_model->get_orders_by_user($userId);
@@ -1824,5 +1827,27 @@ class Decomponents extends CI_Controller
     {
         $data['page_title'] = 'Feature';
         $this->load->view('decomponents/feature', $data);
+    }
+
+    /**
+     * Simple JSON endpoint for client to verify server-side login status.
+     */
+    public function api_auth_status()
+    {
+        $userId = $this->current_user_id();
+        $user = $userId ? $this->Decomponents_model->get_user_by_id($userId) : null;
+
+        $payload = [
+            'logged_in' => $userId ? true : false,
+            'user'      => $user ? [
+                'id'   => $user->id ?? null,
+                'email' => $user->email ?? null,
+                'role' => $user->role ?? null,
+            ] : null,
+        ];
+
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($payload));
     }
 }

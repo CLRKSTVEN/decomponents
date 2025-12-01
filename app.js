@@ -48,6 +48,22 @@ const redirectGuestForLogin = () => {
     window.location.href = buildLoginRedirectUrl();
 };
 
+// Modal helpers (modals added in Products.php)
+const loginModal = document.getElementById('loginModal');
+const addCartModal = document.getElementById('addCartModal');
+const addCartModalMsg = document.getElementById('addCartModalMsg');
+
+const showModal = (modal) => {
+    if (!modal) return;
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+};
+const hideModal = (modal) => {
+    if (!modal) return;
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+};
+
 const openCartFromFlags = () => {
     const params = new URLSearchParams(window.location.search);
     const queryFlag = params.get('showCart') === '1';
@@ -76,6 +92,140 @@ if (iconCart) {
 }
 if (closeCart) {
     closeCart.addEventListener('click', toggleCart);
+}
+
+// Checkout button: show quantity-selection modal for logged-in users
+const checkoutBtn = document.querySelector('.checkOut');
+const checkoutQtyModal = document.getElementById('checkoutQtyModal');
+const checkoutItemsList = document.getElementById('checkoutItemsList');
+if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch('/Decomponents/api_auth_status', { credentials: 'same-origin' });
+            const json = await res.json();
+            if (!json.logged_in) {
+                redirectGuestForLogin();
+                return;
+            }
+        } catch (err) {
+            // network error -> fallback to client-side flag
+            if (!isLoggedIn) {
+                redirectGuestForLogin();
+                return;
+            }
+        }
+
+        // Populate modal with items from cart
+        if (!checkoutItemsList) return showModal(loginModal);
+
+        checkoutItemsList.innerHTML = '';
+        if (!cart || cart.length === 0) {
+            checkoutItemsList.innerHTML = '<p>Your cart is empty.</p>';
+        } else {
+            cart.forEach((item, idx) => {
+                const info = findProductById(item.product_id) || { name: item.product_id };
+                const row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.alignItems = 'center';
+                row.style.justifyContent = 'space-between';
+                row.style.marginBottom = '8px';
+                row.innerHTML = `
+                    <div style="flex:1;margin-right:8px">${info.name}</div>
+                    <div style="width:120px;text-align:right">
+                        <input type="number" min="1" value="${item.quantity || item.qty || 1}" data-idx="${idx}" style="width:72px;padding:6px;border-radius:4px;border:1px solid #ccc">
+                    </div>
+                `;
+                checkoutItemsList.appendChild(row);
+            });
+        }
+
+        showModal(checkoutQtyModal);
+    });
+}
+
+// Login modal actions
+const loginNowBtn = document.querySelector('.loginNow');
+const loginCloseBtn = document.querySelector('.loginClose');
+if (loginNowBtn) {
+    loginNowBtn.addEventListener('click', () => {
+        hideModal(loginModal);
+        redirectGuestForLogin();
+    });
+}
+if (loginCloseBtn) {
+    loginCloseBtn.addEventListener('click', () => hideModal(loginModal));
+}
+
+// Add-to-cart modal actions
+const viewCartBtn = document.querySelector('.viewCart');
+const continueShoppingBtn = document.querySelector('.continueShopping');
+if (viewCartBtn) {
+    viewCartBtn.addEventListener('click', async () => {
+        hideModal(addCartModal);
+        try {
+            const res = await fetch('/Decomponents/api_auth_status', { credentials: 'same-origin' });
+            const json = await res.json();
+            if (!json.logged_in) {
+                redirectGuestForLogin();
+                return;
+            }
+            // server says logged in -> go to cart page
+            window.location.href = '/Decomponents/cart';
+        } catch (err) {
+            // fallback to client-side flag
+            if (!isLoggedIn) {
+                redirectGuestForLogin();
+                return;
+            }
+            window.location.href = '/Decomponents/cart';
+        }
+    });
+}
+if (continueShoppingBtn) {
+    continueShoppingBtn.addEventListener('click', () => hideModal(addCartModal));
+}
+
+// Checkout quantity modal actions
+const checkoutQtyCloseBtn = document.querySelector('.checkoutQtyClose');
+const checkoutQtyProceedBtn = document.querySelector('.checkoutQtyProceed');
+if (checkoutQtyCloseBtn) {
+    checkoutQtyCloseBtn.addEventListener('click', () => hideModal(checkoutQtyModal));
+}
+if (checkoutQtyProceedBtn) {
+    checkoutQtyProceedBtn.addEventListener('click', () => {
+        // Read all inputs inside checkoutItemsList and update cart
+        if (!checkoutItemsList) return hideModal(checkoutQtyModal);
+        const inputs = checkoutItemsList.querySelectorAll('input[type="number"][data-idx]');
+        inputs.forEach(inp => {
+            const idx = parseInt(inp.getAttribute('data-idx'), 10);
+            const val = parseInt(inp.value, 10) || 1;
+            if (cart[idx]) {
+                cart[idx].quantity = val;
+                // Keep legacy key name 'product_id' and 'quantity'
+                if (!cart[idx].product_id && cart[idx].id) {
+                    cart[idx].product_id = cart[idx].id;
+                }
+            }
+        });
+
+        // Persist client cart and update UI
+        addCartToHTML();
+        addCartToMemory();
+
+        // Sync to server for each cart item (best-effort)
+        cart.forEach(item => {
+            const pid = item.product_id || item.id;
+            const qty = item.quantity || item.qty || 1;
+            if (addToCartUrl && pid) {
+                syncCartItemToServer(pid, qty);
+            }
+        });
+
+        hideModal(checkoutQtyModal);
+        // Redirect to payment form
+        window.location.href = '/Decomponents/payment_form';
+    });
 }
 
 const findProductById = (id) => {
@@ -200,7 +350,13 @@ const addToCart = (product_id) => {
     }
     addCartToHTML();
     addCartToMemory();
-    openCartPanel();
+
+    // Show add-to-cart confirmation modal instead of immediately opening the cart panel
+    const productInfo = findProductById(product_id) || { name: 'Product' };
+    if (addCartModalMsg) {
+        addCartModalMsg.innerText = `${productInfo.name} added to your cart.`;
+    }
+    showModal(addCartModal);
 
     if (addToCartUrl) {
         syncCartItemToServer(product_id, 1);
