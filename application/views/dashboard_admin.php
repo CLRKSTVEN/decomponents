@@ -3,186 +3,225 @@
 
 <?php include('includes/head.php'); ?>
 
-<style>
-    body {
-        font-family: var(--app-font);
-        background: #f8fafc;
-    }
-
-    .page-title-box h4 {
-        font-weight: 800;
-        letter-spacing: -0.01em;
-    }
-
-    .card {
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
-    }
-
-    .card-title {
-        font-weight: 800;
-        color: #111827;
-    }
-
-    .table thead th {
-        text-transform: uppercase;
-        font-size: 0.78rem;
-        letter-spacing: 0.08em;
-        color: #6b7280;
-        border-bottom-width: 2px;
-    }
-
-    .badge-medal {
-        font-weight: 800;
-        padding: 6px 10px;
-        border-radius: 10px;
-    }
-
-    .badge-gold {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .badge-silver {
-        background: #e5e7eb;
-        color: #374151;
-    }
-
-    .badge-bronze {
-        background: #ffedd5;
-        color: #9a3412;
-    }
-</style>
-
 <body>
-    <div id="wrapper">
 
+    <div id="wrapper"><!-- Begin page -->
+
+        <!-- Topbar Start -->
         <?php include('includes/top-nav-bar.php'); ?>
+        <!-- end Topbar --> <!-- ========== Left Sidebar Start ========== -->
+
+        <!-- Lef Side bar -->
         <?php include('includes/sidebar.php'); ?>
+        <!-- Left Sidebar End -->
+
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
 
         <div class="content-page">
             <div class="content">
                 <div class="container-fluid">
 
-                    <!-- Page title -->
+                    <div class="row mb-3 align-items-center">
+                        <div class="col">
+                            <h4 class="page-title">Admin Dashboard</h4>
+                            <p class="text-muted mb-0">Quick overview of your store.</p>
+                        </div>
+                        <div class="col-auto">
+                            <a href="<?= site_url('Ezshop/products'); ?>" class="btn btn-primary">
+                                <i class="bi bi-plus-lg"></i> Add Product
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card mini-stat bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <i class="bi bi-box-seam h3 float-right"></i>
+                                        <h6 class="text-uppercase mt-0">Products</h6>
+                                        <h4 class="font-weight-bold mb-0"><?= (int)($stats['products'] ?? 0); ?></h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card mini-stat bg-success text-white">
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <i class="bi bi-receipt h3 float-right"></i>
+                                        <h6 class="text-uppercase mt-0">Orders</h6>
+                                        <h4 class="font-weight-bold mb-0"><?= (int)($stats['orders'] ?? 0); ?></h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card mini-stat bg-warning text-white">
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <i class="bi bi-clock-history h3 float-right"></i>
+                                        <h6 class="text-uppercase mt-0">Pending</h6>
+                                        <h4 class="font-weight-bold mb-0"><?= (int)($stats['pending'] ?? 0); ?></h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card mini-stat bg-info text-white">
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <i class="bi bi-people h3 float-right"></i>
+                                        <h6 class="text-uppercase mt-0">Customers</h6>
+                                        <h4 class="font-weight-bold mb-0"><?= (int)($stats['customers'] ?? 0); ?></h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <?php
-                    $validation_list = validation_errors('<li>', '</li>');
-                    $meet_title = isset($meet->meet_title) ? $meet->meet_title : 'Provincial Meet';
-                    $meet_year  = isset($meet->meet_year)  ? $meet->meet_year  : date('Y');
+                    // Build order metrics and status counts from recent orders
+                    $pie = ['pending' => 0, 'paid' => 0, 'fulfilled' => 0, 'cancelled' => 0];
+                    $totalOrdersView = 0;
+                    $totalSalesView = 0.0;
+                    $itemsSold = 0;
+                    $itemsChartLabels = [];
+                    $itemsChartData = [];
+                    // Sum quantities from order_items table if it exists
+                    $CI = &get_instance();
+                    if ($CI->db->table_exists('order_items')) {
+                        $rowSum = $CI->db->select_sum('quantity')->get('order_items')->row_array();
+                        $itemsSold = (int)($rowSum['quantity'] ?? 0);
+                        // top 5 products by qty
+                        $CI->db->select('p.name AS label, SUM(oi.quantity) AS qty', false)
+                            ->from('order_items oi')
+                            ->join('products p', 'p.id = oi.product_id', 'left')
+                            ->group_by('oi.product_id')
+                            ->order_by('qty', 'DESC')
+                            ->limit(5);
+                        $rows = $CI->db->get()->result_array();
+                        foreach ($rows as $r) {
+                            $itemsChartLabels[] = $r['label'] ?: 'Item';
+                            $itemsChartData[] = (int)$r['qty'];
+                        }
+                    }
+                    if (!empty($recentOrders)) {
+                        foreach ($recentOrders as $o) {
+                            $totalOrdersView++;
+                            $totalSalesView += (float)($o['total_amount'] ?? 0);
+                            $s = strtolower($o['status'] ?? '');
+                            if (isset($pie[$s])) {
+                                $pie[$s]++;
+                            }
+                        }
+                    }
+                    // Fallback if no order_items data
+                    if ($itemsSold === 0 && $totalOrdersView > 0) {
+                        $itemsSold = $totalOrdersView;
+                        if (empty($itemsChartLabels)) {
+                            $itemsChartLabels = ['Orders'];
+                            $itemsChartData = [$totalOrdersView];
+                        }
+                    }
                     ?>
 
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="page-title-box d-flex align-items-center justify-content-between flex-wrap">
-                                <div class="mb-2">
-                                    <h4 class="page-title mb-0">
-                                        <?= htmlspecialchars($meet_title . ' ' . $meet_year, ENT_QUOTES, 'UTF-8'); ?> – Admin
-                                    </h4>
+                    <div class="row mb-3">
+                        <div class="col-md-6 col-sm-6">
+                            <div class="card mini-stat bg-light">
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <h6 class="text-uppercase mt-0 text-muted">Total Sales</h6>
+                                        <h4 class="font-weight-bold mb-0 text-primary">₱<?= number_format($totalSalesView, 2); ?></h4>
+                                        <small class="text-muted">sum of listed orders</small>
+                                    </div>
                                 </div>
-                                <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
-
-                                    <!-- Primary action -->
-                                    <button class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#winnerModal">
-                                        <i class="mdi mdi-plus"></i> New Entry
-                                    </button>
-                                    <!-- Secondary action -->
-                                    <a href="<?= site_url('provincial/standings'); ?>" class="btn btn-outline-primary btn-sm">
-                                        <i class="mdi mdi-trophy"></i> View Standings
-                                    </a>
-
-                                    <!-- Settings -->
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#meetHeaderModal">
-                                        <i class="mdi mdi-cog-outline"></i> Meet Header
-                                    </button>
-
-                                </div>
-
                             </div>
-                            <!-- Updated gradient: green + blue, no purple -->
-                            <hr style="border:0;height:2px;background:linear-gradient(90deg,#059669 0%,#0ea5e9 50%,#22c55e 100%);border-radius:999px;margin-top:4px;">
+                        </div>
+                        <div class="col-md-6 col-sm-6">
+                            <div class="card mini-stat bg-light">
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <h6 class="text-uppercase mt-0 text-muted">Items Sold</h6>
+                                        <h4 class="font-weight-bold mb-0 text-success"><?= (int)$itemsSold; ?></h4>
+                                        <small class="text-muted">sum of item quantities</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Alerts -->
-                    <div class="row">
-                        <div class="col-lg-8">
-                            <?php if ($this->session->flashdata('success')): ?>
-                                <div class="alert alert-success alert-dismissible fade show">
-                                    <?= $this->session->flashdata('success'); ?>
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                </div>
-                            <?php endif; ?>
-
-                            <?php if (!empty($validation_list)): ?>
-                                <div class="alert alert-danger alert-dismissible fade show">
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                    <ul class="mb-0 pl-3" style="list-style: disc;">
-                                        <?= $validation_list; ?>
-                                    </ul>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
-                    <!-- Main content -->
-                    <div class="row">
-                        <!-- Recent winners preview -->
-                        <div class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-lg-6">
                             <div class="card">
                                 <div class="card-body">
-                                    <div class="d-flex align-items-center justify-content-between mb-3">
-                                        <div>
-                                            <h5 class="card-title mb-0">Recent winners</h5>
-                                            <small class="text-muted">Latest entries saved to the standings.</small>
-                                        </div>
-
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h5 class="card-title mb-0">Order Status (last 100)</h5>
+                                        <small class="ml-auto text-muted">Pending / Paid / Shipped / Cancelled</small>
                                     </div>
+                                    <canvas id="adminOrdersBar" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h5 class="card-title mb-0">Items Sold</h5>
+                                        <small class="ml-auto text-muted">Total quantities</small>
+                                    </div>
+                                    <canvas id="adminItemsBar" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                    <?php $recent_winners = isset($recent_winners) ? $recent_winners : array(); ?>
-                                    <?php if (!empty($recent_winners)): ?>
-                                        <div class="table-responsive">
-                                            <table class="table table-hover mb-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Event</th>
-                                                        <th>Group</th>
-                                                        <th>Category</th>
-                                                        <th>Winner</th>
-                                                        <th class="text-center">Medal</th>
-                                                        <th>Municipality</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <?php foreach ($recent_winners as $row): ?>
-                                                        <?php
-                                                        $badgeClass = 'badge-silver';
-                                                        if ($row->medal === 'Gold') {
-                                                            $badgeClass = 'badge-gold';
-                                                        } elseif ($row->medal === 'Bronze') {
-                                                            $badgeClass = 'badge-bronze';
-                                                        }
-                                                        ?>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <h5 class="card-title mb-0">Recent Orders</h5>
+                                        <a href="<?= site_url('Ezshop/orders'); ?>" class="ml-auto text-primary">View all</a>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Customer</th>
+                                                    <th>Email</th>
+                                                    <th>Total</th>
+                                                    <th>Status</th>
+                                                    <th>Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php if (!empty($recentOrders)): ?>
+                                                    <?php foreach ($recentOrders as $rIdx => $order): ?>
                                                         <tr>
-                                                            <td><?= htmlspecialchars($row->event_name, ENT_QUOTES, 'UTF-8'); ?></td>
-                                                            <td><?= htmlspecialchars($row->event_group, ENT_QUOTES, 'UTF-8'); ?></td>
-                                                            <td><?= htmlspecialchars($row->category ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
-                                                            <td><?= htmlspecialchars($row->full_name, ENT_QUOTES, 'UTF-8'); ?></td>
-                                                            <td class="text-center">
-                                                                <span class="badge badge-medal <?= $badgeClass; ?>"><?= htmlspecialchars($row->medal, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                            <td><?= (int)$rIdx + 1; ?></td>
+                                                            <td><?= htmlspecialchars($order['full_name'] ?: 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                            <td><?= htmlspecialchars($order['email'] ?: 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                            <td>₱<?= number_format((float)$order['total_amount'], 2); ?></td>
+                                                            <td>
+                                                                <span class="badge badge-<?= $order['status'] === 'paid' ? 'success' : ($order['status'] === 'pending' ? 'warning' : 'secondary'); ?>">
+                                                                    <?= htmlspecialchars(ucfirst($order['status']), ENT_QUOTES, 'UTF-8'); ?>
+                                                                </span>
                                                             </td>
-                                                            <td><?= htmlspecialchars($row->municipality, ENT_QUOTES, 'UTF-8'); ?></td>
+                                                            <td><?= htmlspecialchars(date('M d, Y', strtotime($order['created_at'])), ENT_QUOTES, 'UTF-8'); ?></td>
                                                         </tr>
                                                     <?php endforeach; ?>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="text-center text-muted py-4">
-                                            <i class="mdi mdi-trophy-outline" style="font-size: 1.6rem;"></i>
-                                            <p class="mb-0">No entries yet. Click “New Entry” to start encoding.</p>
-                                        </div>
-                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                    <tr>
+                                                        <td colspan="6" class="text-center text-muted">No recent orders.</td>
+                                                    </tr>
+                                                <?php endif; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -191,152 +230,132 @@
                 </div>
             </div>
 
-            <?php include('includes/footer.php'); ?>
-
         </div>
+        <!-- ============================================================== -->
+        <!-- End Page content -->
+        <!-- ============================================================== -->
 
-    </div>
+    </div><!-- END wrapper -->
 
-    <?php include('includes/footer_plugins.php'); ?>
 
-    <!-- Meet Header Modal -->
-    <?php
-    $meet_title = isset($meet->meet_title) ? $meet->meet_title : 'Provincial Meet';
-    $meet_year  = isset($meet->meet_year)  ? $meet->meet_year  : date('Y');
-    $subtitle   = isset($meet->subtitle)
-        ? $meet->subtitle
-        : 'Live results encoded by authorized officials. Read-only landing page for public viewing.';
-    ?>
-    <div class="modal fade" id="meetHeaderModal" tabindex="-1" role="dialog" aria-labelledby="meetHeaderModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="meetHeaderModalLabel"><i class="mdi mdi-cog-outline"></i> Meet Header Settings</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <?= form_open('provincial/update_meet_settings'); ?>
-                <div class="modal-body">
-                    <div class="form-group mb-2">
-                        <label>Meet Title</label>
-                        <input type="text" name="meet_title" class="form-control form-control-sm"
-                            value="<?= htmlspecialchars($meet_title, ENT_QUOTES, 'UTF-8'); ?>"
-                            required>
-                    </div>
+    <!-- Right Sidebar -->
+    <?php include('includes/themecustomizer.php'); ?>
+    <!-- /Right-bar -->
 
-                    <div class="form-group mb-2">
-                        <label>Year</label>
-                        <input type="text" name="meet_year" class="form-control form-control-sm"
-                            placeholder="e.x: 2025 or 2025–2026"
-                            value="<?= htmlspecialchars($meet_year, ENT_QUOTES, 'UTF-8'); ?>"
-                            required>
-                    </div>
 
-                    <div class="form-group mb-2">
-                        <label>Subtitle (optional)</label>
-                        <textarea name="subtitle" class="form-control form-control-sm" rows="2"
-                            placeholder="Shown under the title on the landing page"><?= htmlspecialchars($subtitle, ENT_QUOTES, 'UTF-8'); ?></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Header</button>
-                </div>
-                <?= form_close(); ?>
-            </div>
-        </div>
-    </div>
+    <!-- Vendor js -->
+    <script src="<?= base_url(); ?>assets/js/vendor.min.js"></script>
 
-    <!-- Add Winner Modal -->
-    <div class="modal fade" id="winnerModal" tabindex="-1" role="dialog" aria-labelledby="winnerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="winnerModalLabel"><i class="mdi mdi-plus-circle-outline"></i> New Entry</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <?= form_open('provincial/admin'); ?>
-                <div class="modal-body">
-                    <div class="form-row">
-                        <div class="form-group col-md-4">
-                            <label>First Name <span class="text-danger">*</span></label>
-                            <input type="text" name="first_name" class="form-control"
-                                value="<?= set_value('first_name'); ?>" required>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label>Middle Name</label>
-                            <input type="text" name="middle_name" class="form-control"
-                                value="<?= set_value('middle_name'); ?>">
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label>Last Name <span class="text-danger">*</span></label>
-                            <input type="text" name="last_name" class="form-control"
-                                value="<?= set_value('last_name'); ?>" required>
-                        </div>
-                    </div>
+    <script src="<?= base_url(); ?>assets/libs/moment/moment.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/jquery-scrollto/jquery.scrollTo.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/sweetalert2/sweetalert2.min.js"></script>
 
-                    <div class="form-group">
-                        <label>Event <span class="text-danger">*</span></label>
-                        <input type="text" name="event_name" class="form-control"
-                            placeholder="e.x: 100m Dash (Boys)"
-                            value="<?= set_value('event_name'); ?>" required>
-                    </div>
+    <script src="<?= base_url(); ?>assets/libs/fullcalendar/fullcalendar.min.js"></script>
 
-                    <div class="form-row">
-                        <div class="form-group col-md-4">
-                            <label>Group <span class="text-danger">*</span></label>
-                            <select name="event_group" class="form-control" required>
-                                <option value="">-- Select Group --</option>
-                                <option value="Elementary" <?= set_select('event_group', 'Elementary'); ?>>Elementary</option>
-                                <option value="Secondary" <?= set_select('event_group', 'Secondary'); ?>>Secondary</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label>Category</label>
-                            <input type="text" name="category" class="form-control"
-                                placeholder="e.x: Boys Team"
-                                value="<?= set_value('category'); ?>">
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label>Medal <span class="text-danger">*</span></label>
-                            <select name="medal" class="form-control" required>
-                                <option value="">-- Select Medal --</option>
-                                <option value="Gold" <?= set_select('medal', 'Gold');   ?>>Gold</option>
-                                <option value="Silver" <?= set_select('medal', 'Silver'); ?>>Silver</option>
-                                <option value="Bronze" <?= set_select('medal', 'Bronze'); ?>>Bronze</option>
-                            </select>
-                        </div>
-                    </div>
+    <!-- Calendar init -->
+    <script src="<?= base_url(); ?>assets/js/pages/calendar.init.js"></script>
 
-                    <div class="form-group">
-                        <label>Municipality <span class="text-danger">*</span></label>
-                        <input type="text" name="municipality" class="form-control"
-                            placeholder="Input Address"
-                            value="<?= set_value('municipality'); ?>" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
-                    <button type="submit" name="submit" value="1" class="btn btn-success">
-                        <i class="mdi mdi-content-save-outline"></i> Save Winner
-                    </button>
-                </div>
-                <?= form_close(); ?>
-            </div>
-        </div>
-    </div>
+    <!-- Chat app -->
+    <script src="<?= base_url(); ?>assets/js/pages/jquery.chat.js"></script>
 
+    <!-- Todo app -->
+    <script src="<?= base_url(); ?>assets/js/pages/jquery.todo.js"></script>
+
+    <!--Morris Chart-->
+    <script src="<?= base_url(); ?>assets/libs/morris-js/morris.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/raphael/raphael.min.js"></script>
+
+    <!-- Sparkline charts -->
+    <script src="<?= base_url(); ?>assets/libs/jquery-sparkline/jquery.sparkline.min.js"></script>
+
+    <!-- Dashboard init JS -->
+    <script src="<?= base_url(); ?>assets/js/pages/dashboard.init.js"></script>
+
+    <!-- App js -->
+    <script src="<?= base_url(); ?>assets/js/app.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
-        $(function() {
-            <?php if (!empty($validation_list)): ?>
-                $('#winnerModal').modal('show');
-            <?php endif; ?>
-        });
+        (function() {
+            const ctx = document.getElementById('adminOrdersBar');
+            if (!ctx) return;
+            const data = {
+                labels: ['Pending', 'Paid', 'Fulfilled', 'Cancelled'],
+                datasets: [{
+                    data: [
+                        <?= (int)$pie['pending']; ?>,
+                        <?= (int)$pie['paid']; ?>,
+                        <?= (int)$pie['fulfilled']; ?>,
+                        <?= (int)$pie['cancelled']; ?>
+                    ],
+                    backgroundColor: ['#f59e0b', '#10b981', '#3b82f6', '#9ca3af'],
+                    borderWidth: 1,
+                    label: 'Orders'
+                }]
+            };
+            new Chart(ctx, {
+                type: 'bar',
+                data,
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        })();
+
+        (function() {
+            const ctx = document.getElementById('adminItemsBar');
+            if (!ctx) return;
+            const labels = <?= json_encode($itemsChartLabels); ?>;
+            const values = <?= json_encode($itemsChartData); ?>;
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Qty Sold',
+                        data: values,
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        })();
     </script>
 
+    <script src="<?= base_url(); ?>assets/libs/jquery-ui/jquery-ui.min.js"></script>
+    <!-- Required datatable js -->
+    <script src="<?= base_url(); ?>assets/libs/datatables/jquery.dataTables.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/datatables/dataTables.bootstrap4.min.js"></script>
+    <!-- Buttons examples -->
+    <script src="<?= base_url(); ?>assets/libs/datatables/dataTables.buttons.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/datatables/buttons.bootstrap4.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/jszip/jszip.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/pdfmake/pdfmake.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/pdfmake/vfs_fonts.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/datatables/buttons.html5.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/datatables/buttons.print.min.js"></script>
+
+    <!-- Responsive examples -->
+    <script src="<?= base_url(); ?>assets/libs/datatables/dataTables.responsive.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/datatables/responsive.bootstrap4.min.js"></script>
+
+    <script src="<?= base_url(); ?>assets/libs/datatables/dataTables.keyTable.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/datatables/dataTables.select.min.js"></script>
+
+    <!-- Datatables init -->
+    <script src="<?= base_url(); ?>assets/js/pages/datatables.init.js"></script>
+
 </body>
+
+
+
 
 </html>
