@@ -1174,7 +1174,28 @@ class Decomponents extends CI_Controller
             }
         }
 
-        return redirect('home_page.php');
+        // Bubble any validation/auth error to the legacy login view.
+        if (!empty($data['error'])) {
+            $this->session->set_flashdata('msg', $data['error']);
+        }
+
+        // home_page.php expects a $data array with login form imagery.
+        $loginImage = '';
+        if (!empty($data['auth_visual']['image_path'])) {
+            $loginImage = basename((string)$data['auth_visual']['image_path']);
+        }
+        if ($loginImage === '') {
+            $loginImage = 'logo.png';
+        }
+
+        $viewPayload = [
+            'data'         => [(object)['login_form_image' => $loginImage, 'loginFormImage' => $loginImage]],
+            'allow_signup' => 'Yes',
+            'active_sy'    => '',
+            'active_sem'   => '',
+        ];
+
+        return $this->load->view('decomponents/login', $viewPayload);
     }
 
     // 4) SIGNUP PAGE

@@ -29,27 +29,64 @@ const openCartPanel = () => {
     }
 };
 
-const markCartForPostLogin = () => {
+const buildReturnUrl = (reason) => {
+    const target = afterLoginUrl || `${window.location.origin}${window.location.pathname}?showCart=1`;
+    try {
+        const urlObj = new URL(target, window.location.origin);
+        if (!urlObj.searchParams.get('showCart')) {
+            urlObj.searchParams.set('showCart', '1');
+        }
+        if (reason === 'checkout') {
+            urlObj.searchParams.set('checkout', '1');
+        }
+        return urlObj.toString();
+    } catch (e) {
+        // Fallback to string manipulation if URL parsing fails
+        let out = target;
+        if (out.indexOf('showCart=') === -1) {
+            const sep = out.indexOf('?') !== -1 ? '&' : '?';
+            out = `${out}${sep}showCart=1`;
+        }
+        if (reason === 'checkout' && out.indexOf('checkout=1') === -1) {
+            const sep = out.indexOf('?') !== -1 ? '&' : '?';
+            out = `${out}${sep}checkout=1`;
+        }
+        return out;
+    }
+};
+
+const markCartForPostLogin = (reason) => {
+    const returnUrl = buildReturnUrl(reason);
     try {
         localStorage.setItem('cartOpenAfterLogin', '1');
-        localStorage.setItem('cartRedirectAfterLogin', afterLoginUrl);
+        localStorage.setItem('cartRedirectAfterLogin', returnUrl);
+        if (reason === 'checkout') {
+            localStorage.setItem('cartCheckoutAfterLogin', '1');
+        }
     } catch (e) {
         // Ignore storage issues (e.g., private mode).
     }
 };
 
-const buildLoginRedirectUrl = () => {
+const buildLoginRedirectUrl = (reason) => {
+    const returnUrl = buildReturnUrl(reason);
     const separator = loginPageUrl.indexOf('?') !== -1 ? '&' : '?';
-    return `${loginPageUrl}${separator}next=${encodeURIComponent(afterLoginUrl)}`;
+    let url = `${loginPageUrl}${separator}next=${encodeURIComponent(returnUrl)}`;
+    if (reason === 'checkout') {
+        url += '&checkout=1';
+    }
+    return url;
 };
 
-const redirectGuestForLogin = () => {
-    markCartForPostLogin();
-    window.location.href = buildLoginRedirectUrl();
+const redirectGuestForLogin = (reason = '') => {
+    markCartForPostLogin(reason);
+    window.location.href = buildLoginRedirectUrl(reason);
 };
 
 // Modal helpers (modals added in Products.php)
 const loginModal = document.getElementById('loginModal');
+const loginModalTitle = loginModal ? loginModal.querySelector('h3') : null;
+const loginModalBody = loginModal ? loginModal.querySelector('p') : null;
 const addCartModal = document.getElementById('addCartModal');
 const addCartModalMsg = document.getElementById('addCartModalMsg');
 
@@ -62,6 +99,21 @@ const hideModal = (modal) => {
     if (!modal) return;
     modal.style.display = 'none';
     modal.setAttribute('aria-hidden', 'true');
+};
+
+const showLoginRedirectNotice = (title, message, reason = '') => {
+    if (loginModal) {
+        if (loginModalTitle && title) {
+            loginModalTitle.textContent = title;
+        }
+        if (loginModalBody && message) {
+            loginModalBody.textContent = message;
+        }
+        showModal(loginModal);
+        setTimeout(() => redirectGuestForLogin(reason), 900);
+    } else {
+        redirectGuestForLogin(reason);
+    }
 };
 
 const openCartFromFlags = () => {
@@ -98,49 +150,54 @@ if (closeCart) {
 const checkoutBtn = document.querySelector('.checkOut');
 const checkoutQtyModal = document.getElementById('checkoutQtyModal');
 const checkoutItemsList = document.getElementById('checkoutItemsList');
+
+const triggerCheckoutFlow = async () => {
+    try {
+        const res = await fetch('/Decomponents/api_auth_status', { credentials: 'same-origin' });
+        const json = await res.json();
+        if (!json.logged_in) {
+            redirectGuestForLogin('checkout');
+            return;
+        }
+    } catch (err) {
+        // network error -> fallback to client-side flag
+        if (!isLoggedIn) {
+            redirectGuestForLogin('checkout');
+            return;
+        }
+    }
+
+    // Populate modal with items from cart
+    if (!checkoutItemsList) return showModal(loginModal);
+
+    checkoutItemsList.innerHTML = '';
+    if (!cart || cart.length === 0) {
+        checkoutItemsList.innerHTML = '<p>Your cart is empty.</p>';
+    } else {
+        cart.forEach((item, idx) => {
+            const info = findProductById(item.product_id) || { name: item.product_id };
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.alignItems = 'center';
+            row.style.justifyContent = 'space-between';
+            row.style.marginBottom = '8px';
+            row.innerHTML = `
+                <div style="flex:1;margin-right:8px">${info.name}</div>
+                <div style="width:120px;text-align:right">
+                    <input type="number" min="1" value="${item.quantity || item.qty || 1}" data-idx="${idx}" style="width:72px;padding:6px;border-radius:4px;border:1px solid #ccc">
+                </div>
+            `;
+            checkoutItemsList.appendChild(row);
+        });
+    }
+
+    showModal(checkoutQtyModal);
+};
+
 if (checkoutBtn) {
     checkoutBtn.addEventListener('click', async (e) => {
         e.preventDefault();
-        try {
-            const res = await fetch('/Decomponents/api_auth_status', { credentials: 'same-origin' });
-            const json = await res.json();
-            if (!json.logged_in) {
-                redirectGuestForLogin();
-                return;
-            }
-        } catch (err) {
-            // network error -> fallback to client-side flag
-            if (!isLoggedIn) {
-                redirectGuestForLogin();
-                return;
-            }
-        }
-
-        // Populate modal with items from cart
-        if (!checkoutItemsList) return showModal(loginModal);
-
-        checkoutItemsList.innerHTML = '';
-        if (!cart || cart.length === 0) {
-            checkoutItemsList.innerHTML = '<p>Your cart is empty.</p>';
-        } else {
-            cart.forEach((item, idx) => {
-                const info = findProductById(item.product_id) || { name: item.product_id };
-                const row = document.createElement('div');
-                row.style.display = 'flex';
-                row.style.alignItems = 'center';
-                row.style.justifyContent = 'space-between';
-                row.style.marginBottom = '8px';
-                row.innerHTML = `
-                    <div style="flex:1;margin-right:8px">${info.name}</div>
-                    <div style="width:120px;text-align:right">
-                        <input type="number" min="1" value="${item.quantity || item.qty || 1}" data-idx="${idx}" style="width:72px;padding:6px;border-radius:4px;border:1px solid #ccc">
-                    </div>
-                `;
-                checkoutItemsList.appendChild(row);
-            });
-        }
-
-        showModal(checkoutQtyModal);
+        triggerCheckoutFlow();
     });
 }
 
@@ -167,7 +224,7 @@ if (viewCartBtn) {
             const res = await fetch('/Decomponents/api_auth_status', { credentials: 'same-origin' });
             const json = await res.json();
             if (!json.logged_in) {
-                redirectGuestForLogin();
+                showLoginRedirectNotice('Login required', 'Please log in to view your cart.', '');
                 return;
             }
             // server says logged in -> go to cart page
@@ -175,7 +232,7 @@ if (viewCartBtn) {
         } catch (err) {
             // fallback to client-side flag
             if (!isLoggedIn) {
-                redirectGuestForLogin();
+                showLoginRedirectNotice('Login required', 'Please log in to view your cart.', '');
                 return;
             }
             window.location.href = '/Decomponents/cart';
@@ -504,12 +561,34 @@ const initApp = () => {
         }
     };
 
+    const resumeCheckoutAfterLogin = () => {
+        let shouldResume = false;
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('checkout') === '1') {
+            shouldResume = true;
+        }
+        try {
+            if (localStorage.getItem('cartCheckoutAfterLogin') === '1') {
+                shouldResume = true;
+                localStorage.removeItem('cartCheckoutAfterLogin');
+                localStorage.removeItem('cartOpenAfterLogin');
+                localStorage.removeItem('cartRedirectAfterLogin');
+            }
+        } catch (e) {
+            // Ignore storage issues.
+        }
+        if (shouldResume && checkoutBtn) {
+            triggerCheckoutFlow();
+        }
+    };
+
     const bootstrapProducts = (data) => {
         products = normalizeProducts(data);
         populateCategories();
         addDataToHTML();
         loadCartFromStorage();
         openCartFromFlags();
+        resumeCheckoutAfterLogin();
     };
 
     if (Array.isArray(window.PRODUCT_DATA) && window.PRODUCT_DATA.length) {

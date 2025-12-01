@@ -5,10 +5,10 @@ defined('BASEPATH') or exit('No direct script access allowed');
 $route['default_controller'] = 'pages/home';
 
 // keep these for admin login
-$route['login']      = 'login';
-$route['login/auth'] = 'login/auth';
-$route['home_page.php'] = 'login';
-$route['home_page']     = 'login';
+$route['login']      = 'Decomponents/login';
+$route['login/auth'] = 'Decomponents/login'; // POST handled by same method
+$route['home_page.php'] = 'Decomponents/login';
+$route['home_page']     = 'Decomponents/login';
 
 $route['Decomponents'] = 'Decomponents';
 $route['Decomponents/(:any)'] = 'Decomponents/$1';

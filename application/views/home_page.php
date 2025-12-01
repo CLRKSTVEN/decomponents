@@ -1,177 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-	<?php include('includes/title.php'); ?>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+<?php include('includes/head.php'); ?>
 
+<style>
+  body {
+    background-color: #f4f6fb;
+  }
 
-	<!--===============================================================================================-->
-	<link rel="icon" type="<?= base_url(); ?>assets/image/png" href="<?= base_url(); ?>assets/images/favicon.ico" />
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?= base_url(); ?>assets/vendor/bootstrap/css/bootstrap.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?= base_url(); ?>assets/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?= base_url(); ?>assets/fonts/Linearicons-Free-v1.0.0/icon-font.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?= base_url(); ?>assets/vendor/animate/animate.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?= base_url(); ?>assets/vendor/css-hamburgers/hamburgers.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?= base_url(); ?>assets/vendor/animsition/css/animsition.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?= base_url(); ?>assets/vendor/select2/select2.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?= base_url(); ?>assets/vendor/daterangepicker/daterangepicker.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="<?= base_url(); ?>assets/css/util.css">
-	<link rel="stylesheet" type="text/css" href="<?= base_url(); ?>assets/css/main.css">
-	<!--===============================================================================================-->
-	<style>
-		/* Fix for autofill styling */
-		input:-webkit-autofill,
-		input:-webkit-autofill:focus,
-		input:-webkit-autofill:hover,
-		input:-webkit-autofill:active {
-			-webkit-box-shadow: 0 0 0 30px #fff8c6 inset !important;
-			box-shadow: 0 0 0 30px #fff8c6 inset !important;
-			-webkit-text-fill-color: #000 !important;
-		}
+  .login-page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: stretch;
+  }
 
-		/* Force floating label to move up when autofilled */
-		input:-webkit-autofill~.focus-input100,
-		input:-webkit-autofill~.label-input100 {
-			top: -15px;
-			font-size: 12px;
-			color: #999999;
-		}
-	</style>
+  .login-left-img {
+    min-height: 100vh;
+    object-fit: cover;
+  }
 
-</head>
+  .login-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 30px 15px;
+  }
 
-<body style="background-color: #666666;">
+  .login-card-inner {
+    width: 100%;
+    max-width: 420px;
+    border-radius: 16px;
+    border: 1px solid #e0e6f1;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    background: #ffffff;
+    padding: 28px 26px 26px;
+  }
 
-	<div class="limiter">
-		<div class="container-login100">
-			<div class="wrap-login100">
+  .login-brand {
+    text-align: center;
+    margin-bottom: 10px;
+  }
 
-				<form action="<?php echo site_url('Login/auth'); ?>" method="post" class="login100-form validate-form">
-					<input type="hidden" name="next" value="<?= html_escape($this->input->get('next')) ?>">
+  .login-brand img {
+    max-height: 60px;
+  }
 
-					<span class="login100-form-title p-b-43"></span>
-					<span class="login100-form-title p-b-43">
-						<img src="<?= base_url(); ?>upload/banners/<?php echo $data[0]->login_form_image; ?>" alt="mySRMS Portal" height="150" width="150">
-						<!-- <img src="<?= base_url(); ?>upload/banners/<?php echo $data[0]->login_form_image; ?>" alt="mySRMS Portal" width="100%"> -->
-					</span>
+  .login-title {
+    text-align: center;
+    margin-bottom: 6px;
+  }
 
-					<div style="text-align:center; color:#f8f7fc; background-color:#050168;text-transform:uppercase; style:bold;"><small><?php echo $this->session->flashdata('msg'); ?></small></div>
-					<div class="wrap-input100 validate-input" data-validate="Username is required">
-						<input class="input100" type="text" autocomplete="off" name="username">
-						<span class="focus-input100"></span>
-						<span class="label-input100">Username</span>
-					</div>
+  .login-title h4 {
+    margin-bottom: 0;
+    font-weight: 700;
+  }
 
+  .login-title small {
+    color: #6c757d;
+  }
 
-					<div class="wrap-input100 validate-input" data-validate="Password is required">
-						<input class="input100" type="password" autocomplete="off" name="password">
-						<span class="focus-input100"></span>
-						<span class="label-input100">Password</span>
-					</div>
+  .form-floating-label {
+    position: relative;
+    margin-bottom: 1rem;
+  }
 
+  .form-floating-label input {
+    padding: 0.75rem 2.5rem 0.35rem 2.3rem;
+    /* extra right space for eye icon */
+    border-radius: 0.5rem;
+  }
 
-					<input class="input100" type="hidden" name="sy" value="<?php echo isset($active_sy) ? $active_sy : ''; ?>">
-					<input class="input100" type="hidden" name="semester" value="<?php echo isset($active_sem) ? $active_sem : ''; ?>">
+  .form-floating-label label {
+    position: absolute;
+    left: 2.35rem;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
+    font-size: 0.85rem;
+    color: #9ca3af;
+    pointer-events: none;
+    transition: all 0.15s ease;
+    background: #fff;
+    padding: 0 4px;
+  }
 
+  .form-floating-label input:focus+label,
+  .form-floating-label input:not(:placeholder-shown)+label {
+    top: -1px;
+    font-size: 0.75rem;
+    color: #2563eb;
+  }
 
-					<div class="container-login100-form-btn">
-						<button class="login100-form-btn">
-							Login
-						</button>
-					</div>
+  .input-icon {
+    position: absolute;
+    left: 0.65rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 1rem;
+  }
 
-					<div class="text-center p-t-46 p-b-20">
-						<span class="txt2">
-							<?php if (isset($allow_signup) && $allow_signup == 'Yes') : ?>
-								<a href="<?= base_url(); ?>Registration"><span style="color: #3498db">CREATE AN ACCOUNT</span></a> |
-							<?php endif; ?>
-							<a href="#" data-toggle="modal" data-target="#forgotModal">FORGOT PASSWORD</a>
-						</span>
-					</div>
+  .toggle-password {
+    position: absolute;
+    right: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 1.1rem;
+  }
 
+  .login-footer-text {
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    text-align: center;
+  }
 
-				</form>
+  .login-footer-text a {
+    font-weight: 600;
+  }
 
-				<div class="login100-more" style="background-image: url('<?= base_url(); ?>upload/banners/<?php echo $data[0]->loginFormImage; ?>');">
+  .alert {
+    font-size: 0.85rem;
+  }
 
+  @media (max-width: 991.98px) {
+    .login-left-col {
+      display: none;
+    }
 
-				</div>
-			</div>
-		</div>
-	</div>
+    .login-card {
+      min-height: 100vh;
+    }
+  }
+</style>
 
+<body>
 
+  <!-- Loader starts-->
+  <div class="loader-wrapper">
+    <div class="loader">
+      <div class="loader-bar"></div>
+      <div class="loader-bar"></div>
+      <div class="loader-bar"></div>
+      <div class="loader-bar"></div>
+      <div class="loader-bar"></div>
+      <div class="loader-ball"></div>
+    </div>
+  </div>
+  <!-- Loader ends-->
 
+  <section class="login-page-wrapper">
+    <div class="container-fluid">
+      <div class="row no-gutters">
 
+        <!-- Left image -->
+        <div class="col-xl-5 col-lg-5 col-md-4 login-left-col">
+          <img class="login-left-img w-100"
+            src="<?= base_url(); ?>assets/images/login/2.jpg"
+            alt="Login background">
+        </div>
 
-	<!--===============================================================================================-->
-	<script src="<?= base_url(); ?>assets/vendor/jquery/jquery-3.2.1.min.js"></script>
-	<!--===============================================================================================-->
-	<script src="<?= base_url(); ?>assets/vendor/animsition/js/animsition.min.js"></script>
-	<!--===============================================================================================-->
-	<script src="<?= base_url(); ?>assets/vendor/bootstrap/js/popper.js"></script>
-	<script src="<?= base_url(); ?>assets/vendor/bootstrap/js/bootstrap.min.js"></script>
-	<!--===============================================================================================-->
-	<script src="<?= base_url(); ?>assets/vendor/select2/select2.min.js"></script>
-	<!--===============================================================================================-->
-	<script src="<?= base_url(); ?>assets/vendor/daterangepicker/moment.min.js"></script>
-	<script src="<?= base_url(); ?>assets/vendor/daterangepicker/daterangepicker.js"></script>
-	<!--===============================================================================================-->
-	<script src="<?= base_url(); ?>assets/vendor/countdowntime/countdowntime.js"></script>
-	<!--===============================================================================================-->
-	<script src="<?= base_url(); ?>assets/js/main.js"></script>
+        <!-- Right card -->
+        <div class="col-xl-7 col-lg-7 col-md-8 d-flex justify-content-center p-0">
+          <div class="login-card w-100">
+            <div class="login-card-inner">
 
+              <!-- Optional logo -->
+              <div class="login-brand">
+                <img src="<?= base_url(); ?>assets/images/logo/logo.png" alt="BAC Portal">
+              </div>
 
+              <!-- Title + subtitle -->
+              <div class="login-title">
+                <h4>BAC Procurement Portal</h4>
+                <small>Sign in with your assigned account credentials.</small>
+              </div>
 
+              <!-- Flash messages -->
+              <?php if ($this->session->flashdata('message')): ?>
+                <div class="alert alert-info alert-dismissible fade show mt-2" role="alert">
+                  <?= $this->session->flashdata('message'); ?>
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              <?php endif; ?>
 
+              <?php if ($this->session->flashdata('success')): ?>
+                <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
+                  <?= $this->session->flashdata('success'); ?>
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              <?php endif; ?>
+
+              <?php if ($this->session->flashdata('danger')): ?>
+                <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+                  <?= $this->session->flashdata('danger'); ?>
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              <?php endif; ?>
+
+              <?php
+              $checkoutNotice = $this->session->flashdata('error');
+              $checkoutParam = $this->input->get('checkout');
+              if (empty($checkoutNotice) && (!empty($this->input->get('next')) || !empty($checkoutParam))) {
+                $checkoutNotice = 'Please log in to continue checkout.';
+              }
+              ?>
+              <?php if (!empty($checkoutNotice)) : ?>
+                <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert">
+                  <?= html_escape($checkoutNotice); ?>
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              <?php endif; ?>
+
+              <!-- Login form -->
+              <form action="<?= site_url('Login/auth'); ?>" method="post" class="mt-3">
+
+                <!-- Username -->
+                <div class="form-floating-label">
+                  <span class="input-icon">
+                    <i class="mdi mdi-email-outline"></i>
+                  </span>
+                  <input
+                    type="text"
+                    name="username"
+                    class="form-control"
+                    required
+                    autocomplete="username"
+                    placeholder=" ">
+                  <label>Email / Username</label>
+                </div>
+
+                <!-- Password -->
+                <div class="form-floating-label">
+                  <span class="input-icon">
+                    <i class="mdi mdi-lock-outline"></i>
+                  </span>
+                  <input
+                    type="password"
+                    id="loginPassword"
+                    name="password"
+                    class="form-control"
+                    required
+                    autocomplete="current-password"
+                    placeholder=" ">
+                  <label>Password</label>
+                  <span class="toggle-password" data-target="#loginPassword">
+                    <i class="mdi mdi-eye-outline"></i>
+                  </span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="rememberMe">
+                    <label class="custom-control-label text-muted" for="rememberMe">Remember me</label>
+                  </div>
+                  <a class="link" href="<?= site_url('login/forgot'); ?>">Forgot Password?</a>
+                  <!-- TODO: Wire this to your actual forgot-password route if available -->
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                  Sign in
+                </button>
+
+              </form>
+
+              <div class="login-footer-text">
+                Don't have an account?
+                <a href="<?= site_url('Login/registration'); ?>">
+                  Create one here
+                </a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- JS -->
+  <script src="<?= base_url(); ?>assets/js/jquery-3.5.1.min.js"></script>
+  <script src="<?= base_url(); ?>assets/js/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="<?= base_url(); ?>assets/js/icons/feather-icon/feather.min.js"></script>
+  <script src="<?= base_url(); ?>assets/js/icons/feather-icon/feather-icon.js"></script>
+  <script src="<?= base_url(); ?>assets/js/config.js"></script>
+  <script src="<?= base_url(); ?>assets/js/script.js"></script>
+
+  <script>
+    // Show / hide password
+    $(document).on('click', '.toggle-password', function() {
+      var targetSelector = $(this).data('target');
+      var $input = $(targetSelector);
+      var $icon = $(this).find('i');
+
+      if ($input.attr('type') === 'password') {
+        $input.attr('type', 'text');
+        $icon.removeClass('mdi-eye-outline').addClass('mdi-eye-off-outline');
+      } else {
+        $input.attr('type', 'password');
+        $icon.removeClass('mdi-eye-off-outline').addClass('mdi-eye-outline');
+      }
+    });
+  </script>
 
 </body>
-
-<!-- Forgot Password Modal -->
-<div class="modal fade" id="forgotModal" tabindex="-1" role="dialog" aria-labelledby="forgotModalLabel" style="color:black">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h4 class="modal-title" id="forgotModalLabel">Forgot Password</h4>
-			</div>
-			<div class="modal-body">
-				<form id="resetPassword" name="resetPassword" method="post" action="<?php echo base_url(); ?>login/forgot_pass" onsubmit='return validate()'>
-					<div class="input-group mb-3">
-						<input type="email" name="email" id="email" class="form-control" placeholder="Enter your email" required>
-						<div class="input-group-append">
-							<div class="input-group-text">
-								<span class="fas fa-envelope"></span>
-							</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-12">
-							<input type="submit" value="Request a New Password" class="btn btn-primary btn-block name=" forgot_pass">
-						</div>
-						<!-- /.col -->
-					</div>
-				</form>
-
-
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-
-			</div>
-		</div>
-	</div>
-</div>
-<!-- End Forgot Password Modal -->
 
 </html>
