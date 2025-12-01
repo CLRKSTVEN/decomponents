@@ -1,0 +1,142 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    background: #1e1e1e;
+    padding: 40px;
+    width: 350px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+    text-align: center;
+    margin: 20px;
+    color: #fff;
+}
+
+.form-title {
+    font-weight: bold;
+    color: #e53935;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: #2a2a2a;
+    margin: 10px 0;
+    border-radius: 10px;
+    transition: 0.3s ease;
+}
+
+.input-group i {
+    color: #e53935;
+    padding-right: 10px;
+}
+
+.input-group input {
+    background: transparent;
+    color: #fff;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    width: 100%;
+}
+
+.input-group input::placeholder {
+    color: #757575;
+}
+
+.input-group input:focus {
+    border-color: #e53935;
+}
+
+.btn {
+    background-color: #e53935;
+    color: #fff;
+    font-weight: bold;
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: bold;
+    display: inline-block;
+    width: 100%;
+    text-transform: uppercase;
+    margin-top: 10px;
+}
+
+.btn:hover {
+    background-color: #d32f2f;
+}
+
+.btn:active {
+    background-color: #b71c1c;
+}
+
+.icons {
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 36px;
+    color: #fff;
+}
+
+.icons i {
+    transition: transform 0.3s ease;
+}
+
+.icons i:hover {
+    transform: scale(1.2);
+}
+
+.links {
+    padding-top: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.links button {
+    background: none;
+    color: #ffeb3d;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.links button:hover {
+    background-color: #424242;
+    transition: 0.3s ease;
+}
+
+.recover a {
+    color: #ff5252;
+    text-decoration: none;
+}
+
+.recover a:hover {
+    text-decoration: underline;
+}
+#image-preview {
+    max-width: 200px;
+    height: auto;
+    margin-top: 10px;
+    border-radius: 50%;
+    object-fit: cover;
+}
