@@ -40,7 +40,7 @@
                         <div class="col-lg-8">
                             <div class="card">
                                 <div class="card-body">
-                                    <form action="<?= site_url('Ezshop/save_settings'); ?>" method="post">
+                                    <form action="<?= site_url('Decomponents/save_settings'); ?>" method="post">
                                         <h5 class="card-title">Branding</h5>
                                         <div class="form-group">
                                             <label>Site Name</label>
@@ -103,7 +103,7 @@
                                         <div class="form-group">
                                             <label>Hero CTA Link (Controller/Route)</label>
                                             <input type="text" name="hero_cta_link" class="form-control" value="<?= htmlspecialchars($settings['hero_cta_link'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
-                                            <small class="text-muted">Example: <code>Ezshop/shop</code></small>
+                                            <small class="text-muted">Example: <code>Decomponents/shop</code></small>
                                         </div>
 
                                         <div class="mt-3">

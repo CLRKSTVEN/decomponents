@@ -3,7 +3,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 use League\OAuth2\Client\Provider\Google;
 
-class Ezshop extends CI_Controller
+class Decomponents extends CI_Controller
 {
 
     public function __construct()
@@ -12,7 +12,7 @@ class Ezshop extends CI_Controller
         $this->load->helper(['url', 'form', 'directory']);
         $this->load->library(['session', 'upload']);
         $this->load->database();
-        $this->load->model('Ezshop_model');
+        $this->load->model('Decomponents_model');
         $this->load->model('Product_model');
         $this->load->model('Category_model');
         $this->load->model('Settings_model');
@@ -39,7 +39,7 @@ class Ezshop extends CI_Controller
         // Accept both legacy capitalized and lowercase roles.
         if (!in_array(strtolower((string)$level), ['admin'], true)) {
             $this->session->set_flashdata('error', 'Admin access required.');
-            redirect('Ezshop/login');
+            redirect('Decomponents/login');
             exit;
         }
     }
@@ -75,6 +75,108 @@ class Ezshop extends CI_Controller
         }
 
         return 'Guest';
+    }
+
+    /**
+     * Return the active user id from any of the known session keys.
+     */
+    private function current_user_id()
+    {
+        $candidates = ['ez_user_id', 'userID', 'id'];
+        foreach ($candidates as $key) {
+            $val = $this->session->userdata($key);
+            if (!empty($val)) {
+                return (int)$val;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Persist the requested post-login destination so we can reuse it after OAuth redirects.
+     */
+    private function remember_next_from_request()
+    {
+        $next = trim((string)$this->input->post('next', true));
+        if ($next === '') {
+            $next = trim((string)$this->input->get('next', true));
+        }
+        if ($next !== '') {
+            $this->session->set_userdata('login_next_redirect', $next);
+        }
+        return $next;
+    }
+
+    /**
+     * Return a safe, same-site redirect target falling back when missing or external.
+     */
+    private function get_safe_next_url($fallback = 'Decomponents/shop')
+    {
+        $fallbackUrl = preg_match('#^https?://#i', $fallback) ? $fallback : site_url($fallback);
+
+        $candidate = trim((string)$this->input->post('next', true));
+        if ($candidate === '') {
+            $candidate = trim((string)$this->input->get('next', true));
+        }
+
+        $usedSession = false;
+        if ($candidate === '') {
+            $candidate = (string)$this->session->userdata('login_next_redirect');
+            $usedSession = $candidate !== '';
+        }
+
+        if ($candidate === '') {
+            return $fallbackUrl;
+        }
+
+        $parts = @parse_url($candidate);
+        if ($parts === false) {
+            if ($usedSession) {
+                $this->session->unset_userdata('login_next_redirect');
+            }
+            return $fallbackUrl;
+        }
+
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        $isRelative = !isset($parts['host']) && !isset($parts['scheme']);
+        $isSameHost = isset($parts['host']) && $host !== '' && strcasecmp($parts['host'], $host) === 0;
+
+        if (!$isRelative && !$isSameHost) {
+            if ($usedSession) {
+                $this->session->unset_userdata('login_next_redirect');
+            }
+            return $fallbackUrl;
+        }
+
+        if ($usedSession) {
+            $this->session->unset_userdata('login_next_redirect');
+        }
+
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+        $path = $parts['path'] ?? '';
+        $query = isset($parts['query']) ? '?' . $parts['query'] : '';
+        $fragment = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
+        $port = isset($parts['port']) ? ':' . $parts['port'] : '';
+
+        if ($isRelative) {
+            if ($host === '') {
+                return $fallbackUrl;
+            }
+            if ($path === '') {
+                $path = $candidate;
+            }
+            if (strpos($path, '/') !== 0) {
+                $path = '/' . ltrim($path, '/');
+            }
+            return $scheme . '://' . $host . $path . $query . $fragment;
+        }
+
+        // Same host but protocol-relative or missing scheme
+        if (empty($parts['scheme'])) {
+            return $scheme . '://' . $parts['host'] . $port . $path . $query . $fragment;
+        }
+
+        return $candidate;
     }
     private function build_google_provider()
     {
@@ -118,6 +220,9 @@ class Ezshop extends CI_Controller
 
     public function login_google()
     {
+        // Remember where to return after Google completes auth.
+        $this->remember_next_from_request();
+
         // Build provider
         $provider = $this->build_google_provider();
 
@@ -149,7 +254,7 @@ class Ezshop extends CI_Controller
         // User cancelled or Google returned an error
         if (!empty($error)) {
             $this->session->set_flashdata('error', 'Google sign-in was cancelled or failed: ' . $error);
-            redirect('Ezshop/login');
+            redirect('Decomponents/login');
             return;
         }
 
@@ -158,7 +263,7 @@ class Ezshop extends CI_Controller
         if (!$state || !$savedState || $state !== $savedState) {
             $this->session->unset_userdata('google_oauth_state');
             $this->session->set_flashdata('error', 'Invalid Google login session. Please try again.');
-            redirect('Ezshop/login');
+            redirect('Decomponents/login');
             return;
         }
 
@@ -186,7 +291,7 @@ class Ezshop extends CI_Controller
                 $errorMsg .= ' (' . $e->getMessage() . ')';
             }
             $this->session->set_flashdata('error', $errorMsg);
-            redirect('Ezshop/login');
+            redirect('Decomponents/login');
             return;
         }
 
@@ -200,12 +305,12 @@ class Ezshop extends CI_Controller
 
         if (empty($email)) {
             $this->session->set_flashdata('error', 'Google did not provide an email address.');
-            redirect('Ezshop/login');
+            redirect('Decomponents/login');
             return;
         }
 
         // Check if user already exists
-        $user = $this->Ezshop_model->get_user_by_email($email);
+        $user = $this->Decomponents_model->get_user_by_email($email);
 
         // If no user yet, auto-create a customer account
         if (!$user) {
@@ -243,14 +348,14 @@ class Ezshop extends CI_Controller
                 'created_at'      => date('Y-m-d H:i:s'),
             ];
 
-            $newId = $this->Ezshop_model->create_user($userData);
+            $newId = $this->Decomponents_model->create_user($userData);
             if (!$newId) {
                 $this->session->set_flashdata('error', 'Unable to create an account from your Google profile.');
-                redirect('Ezshop/login');
+                redirect('Decomponents/login');
                 return;
             }
 
-            $user = $this->Ezshop_model->get_user_by_id($newId);
+            $user = $this->Decomponents_model->get_user_by_id($newId);
         }
 
         // Log in the user (same session keys as normal login)
@@ -263,12 +368,9 @@ class Ezshop extends CI_Controller
             'ez_user_avatar' => $user->profile_picture ?: 'upload/profile/avatar.png',
         ]);
 
-        // Send admins to dashboard, customers to shop
-        if (strtolower((string)$user->role) === 'admin') {
-            redirect('Ezshop/admin');
-        } else {
-            redirect('Ezshop/shop');
-        }
+        // Send admins to dashboard, customers to shop, unless a safe "next" URL was provided.
+        $defaultRedirect = strtolower((string)$user->role) === 'admin' ? 'Decomponents/admin' : 'Decomponents/shop';
+        redirect($this->get_safe_next_url($defaultRedirect));
     }
 
     /**
@@ -346,12 +448,12 @@ class Ezshop extends CI_Controller
     public function visitor()
     {
         $data = [
-            'page_title' => 'Welcome to EZ-Shop',
+            'page_title' => 'Welcome to DeComponents',
         ];
-        $this->load->view('ezshop/visitor', $data);
+        $this->load->view('decomponents/visitor', $data);
     }
 
-    // 1) LANDING PAGE: http://localhost/ezshop/
+    // 1) LANDING PAGE: http://localhost/decomponents/
     public function index()
     {
         $featured = $this->Product_model->get_all_with_categories();
@@ -398,10 +500,10 @@ class Ezshop extends CI_Controller
         }
 
         $data = [
-            'page_title'       => 'Welcome to EZ-Shop',
+            'page_title'       => 'Welcome to DeComponents',
             'featuredProducts' => $featured,
         ];
-        $this->load->view('ezshop/landing', $data);
+        $this->load->view('decomponents/landing', $data);
     }
 
     // 2) SHOP PAGE (PRODUCT GRID)
@@ -410,7 +512,7 @@ class Ezshop extends CI_Controller
         // Admins should manage via dashboard, not browse shop UI.
         $role = strtolower((string)$this->session->userdata('level'));
         if ($role === 'admin') {
-            return redirect('Ezshop/admin');
+            return redirect('Decomponents/admin');
         }
 
         $category = strtolower($category);
@@ -529,7 +631,7 @@ class Ezshop extends CI_Controller
         }
 
         $data = [
-            'page_title'    => 'EZ-Shop ' . $map[$category]['title'],
+            'page_title'    => 'DeComponents ' . $map[$category]['title'],
             'products'      => $products,
             'cartCount'     => $cartCount,
             'category'      => $category,
@@ -538,16 +640,16 @@ class Ezshop extends CI_Controller
             'currentPage'   => $page,
             'perPage'       => $perPage,
             'totalItems'    => $total,
-            'baseUrl'       => site_url('Ezshop/shop/' . $category),
+            'baseUrl'       => site_url('Decomponents/shop/' . $category),
         ];
 
         // If logged in, surface the user details for greetings
         $userId = $this->session->userdata('ez_user_id');
         if ($userId) {
-            $data['user'] = $this->Ezshop_model->get_user_by_id($userId);
+            $data['user'] = $this->Decomponents_model->get_user_by_id($userId);
         }
 
-        $this->load->view('ezshop/index', $data);
+        $this->load->view('decomponents/index', $data);
     }
 
     /**
@@ -558,13 +660,13 @@ class Ezshop extends CI_Controller
         $this->require_admin();
 
         $stats = [
-            'products' => $this->Ezshop_model->count_products(),
-            'orders'   => $this->Ezshop_model->count_orders(),
-            'pending'  => $this->Ezshop_model->count_orders('pending'),
-            'customers' => $this->Ezshop_model->count_users('customer'),
+            'products' => $this->Decomponents_model->count_products(),
+            'orders'   => $this->Decomponents_model->count_orders(),
+            'pending'  => $this->Decomponents_model->count_orders('pending'),
+            'customers' => $this->Decomponents_model->count_users('customer'),
         ];
 
-        $recentOrders = $this->Ezshop_model->recent_orders(5);
+        $recentOrders = $this->Decomponents_model->recent_orders(5);
 
         $data = [
             'page_title'   => 'Admin Dashboard',
@@ -583,9 +685,9 @@ class Ezshop extends CI_Controller
         $this->require_admin();
         $data = [
             'page_title' => 'Orders',
-            'orders'     => $this->Ezshop_model->get_all_orders(100),
+            'orders'     => $this->Decomponents_model->get_all_orders(100),
         ];
-        $this->load->view('ezshop/admin_orders', $data);
+        $this->load->view('decomponents/admin_orders', $data);
     }
 
     /**
@@ -595,7 +697,7 @@ class Ezshop extends CI_Controller
     {
         $this->require_admin();
         if ($this->input->method() !== 'post') {
-            return redirect('Ezshop/orders');
+            return redirect('Decomponents/orders');
         }
 
         $orderId = (int)$this->input->post('order_id');
@@ -604,12 +706,12 @@ class Ezshop extends CI_Controller
 
         if (!$orderId || !in_array($status, $allowed, true)) {
             $this->session->set_flashdata('error', 'Invalid status update.');
-            return redirect('Ezshop/orders');
+            return redirect('Decomponents/orders');
         }
 
-        $ok = $this->Ezshop_model->update_order_status($orderId, $status);
+        $ok = $this->Decomponents_model->update_order_status($orderId, $status);
         $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Order status updated.' : 'Unable to update order.');
-        redirect('Ezshop/orders');
+        redirect('Decomponents/orders');
     }
 
     /**
@@ -620,9 +722,9 @@ class Ezshop extends CI_Controller
         $this->require_admin();
         $data = [
             'page_title' => 'Customers',
-            'customers'  => $this->Ezshop_model->get_customers(100),
+            'customers'  => $this->Decomponents_model->get_customers(100),
         ];
-        $this->load->view('ezshop/admin_customers', $data);
+        $this->load->view('decomponents/admin_customers', $data);
     }
 
     /**
@@ -635,7 +737,7 @@ class Ezshop extends CI_Controller
             'page_title' => 'Support Staff',
             'staff'      => $this->Contact_model->get_staff(100),
         ];
-        $this->load->view('ezshop/admin_staff', $data);
+        $this->load->view('decomponents/admin_staff', $data);
     }
 
     /**
@@ -645,7 +747,7 @@ class Ezshop extends CI_Controller
     {
         $this->require_admin();
         if ($this->input->method() !== 'post') {
-            return redirect('Ezshop/staff');
+            return redirect('Decomponents/staff');
         }
 
         $name  = trim($this->input->post('name', true));
@@ -655,11 +757,11 @@ class Ezshop extends CI_Controller
 
         if (!$name || !$email) {
             $this->session->set_flashdata('error', 'Name and email are required.');
-            return redirect('Ezshop/staff');
+            return redirect('Decomponents/staff');
         }
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->session->set_flashdata('error', 'Enter a valid email address.');
-            return redirect('Ezshop/staff');
+            return redirect('Decomponents/staff');
         }
 
         $payload = [
@@ -679,7 +781,7 @@ class Ezshop extends CI_Controller
             $this->session->set_flashdata('error', 'Unable to save staff member.');
         }
 
-        redirect('Ezshop/staff');
+        redirect('Decomponents/staff');
     }
 
     /**
@@ -695,7 +797,7 @@ class Ezshop extends CI_Controller
         } else {
             $this->session->set_flashdata('error', 'Invalid staff id.');
         }
-        redirect('Ezshop/staff');
+        redirect('Decomponents/staff');
     }
 
     /**
@@ -704,7 +806,7 @@ class Ezshop extends CI_Controller
      */
     public function admin_autologin()
     {
-        $admin = $this->Ezshop_model->ensure_admin_user('admin@ezshop.local', 'admin123');
+        $admin = $this->Decomponents_model->ensure_admin_user('admin@decomponents.local', 'admin123');
         if ($admin) {
             $avatar = $admin->profile_picture ?: 'upload/profile/avatar.png';
             $displayName = $this->format_display_name($admin);
@@ -715,7 +817,7 @@ class Ezshop extends CI_Controller
                 'ez_user_avatar' => $avatar,
             ]);
         }
-        redirect('Ezshop/admin');
+        redirect('Decomponents/admin');
     }
 
     /**
@@ -734,7 +836,7 @@ class Ezshop extends CI_Controller
             'categories' => $categories,
         ];
 
-        $this->load->view('ezshop/admin_products', $data);
+        $this->load->view('decomponents/admin_products', $data);
     }
 
     /**
@@ -747,7 +849,7 @@ class Ezshop extends CI_Controller
             'page_title' => 'Shop Settings',
             'settings'   => $this->Settings_model->get_settings(),
         ];
-        $this->load->view('ezshop/admin_settings', $data);
+        $this->load->view('decomponents/admin_settings', $data);
     }
 
     /**
@@ -757,7 +859,7 @@ class Ezshop extends CI_Controller
     {
         $this->require_admin();
         if ($this->input->method() !== 'post') {
-            return redirect('Ezshop/settings');
+            return redirect('Decomponents/settings');
         }
 
         $payload = [
@@ -778,7 +880,7 @@ class Ezshop extends CI_Controller
 
         $this->Settings_model->upsert_settings($payload);
         $this->session->set_flashdata('success', 'Settings updated.');
-        redirect('Ezshop/settings');
+        redirect('Decomponents/settings');
     }
 
     /**
@@ -799,7 +901,7 @@ class Ezshop extends CI_Controller
             'active_signup' => $this->Auth_visual_model->get_active_by_page('signup'),
         ];
 
-        $this->load->view('ezshop/admin_auth_visuals', $data);
+        $this->load->view('decomponents/admin_auth_visuals', $data);
     }
 
     /**
@@ -809,7 +911,7 @@ class Ezshop extends CI_Controller
     {
         $this->require_admin();
         if ($this->input->method() !== 'post') {
-            return redirect('Ezshop/auth_visuals');
+            return redirect('Decomponents/auth_visuals');
         }
 
         $id   = (int)$this->input->post('id');
@@ -818,7 +920,7 @@ class Ezshop extends CI_Controller
 
         if (!in_array($page, $allowedPages, true)) {
             $this->session->set_flashdata('error', 'Choose whether this visual is for Login or Signup.');
-            return redirect('Ezshop/auth_visuals');
+            return redirect('Decomponents/auth_visuals');
         }
 
         $payload = [
@@ -840,7 +942,7 @@ class Ezshop extends CI_Controller
 
         if (empty($payload['headline'])) {
             $this->session->set_flashdata('error', 'Headline is required.');
-            return redirect('Ezshop/auth_visuals' . ($id ? '/' . $id : ''));
+            return redirect('Decomponents/auth_visuals' . ($id ? '/' . $id : ''));
         }
 
         // Handle optional image upload.
@@ -863,7 +965,7 @@ class Ezshop extends CI_Controller
                 $payload['image_path'] = 'upload/auth/' . $fileData['file_name'];
             } else {
                 $this->session->set_flashdata('error', strip_tags($this->upload->display_errors('', '')));
-                return redirect('Ezshop/auth_visuals' . ($id ? '/' . $id : ''));
+                return redirect('Decomponents/auth_visuals' . ($id ? '/' . $id : ''));
             }
         } else {
             // Preserve existing image when updating without a new file.
@@ -885,7 +987,7 @@ class Ezshop extends CI_Controller
             $this->session->set_flashdata('error', 'Unable to save the visual.');
         }
 
-        redirect('Ezshop/auth_visuals');
+        redirect('Decomponents/auth_visuals');
     }
 
     /**
@@ -901,7 +1003,7 @@ class Ezshop extends CI_Controller
         } else {
             $this->session->set_flashdata('error', 'Invalid visual id.');
         }
-        redirect('Ezshop/auth_visuals');
+        redirect('Decomponents/auth_visuals');
     }
 
     /**
@@ -912,7 +1014,7 @@ class Ezshop extends CI_Controller
         $this->require_admin();
 
         if ($this->input->method() !== 'post') {
-            return redirect('Ezshop/products');
+            return redirect('Decomponents/products');
         }
 
         $name        = trim($this->input->post('name', true));
@@ -925,7 +1027,7 @@ class Ezshop extends CI_Controller
 
         if (!$name || !$category_id || $price <= 0) {
             $this->session->set_flashdata('error', 'Name, category, and price are required.');
-            return redirect('Ezshop/products');
+            return redirect('Decomponents/products');
         }
 
         $imagePath = null;
@@ -945,7 +1047,7 @@ class Ezshop extends CI_Controller
 
             if (!$this->upload->do_upload('image')) {
                 $this->session->set_flashdata('error', $this->upload->display_errors('', ''));
-                return redirect('Ezshop/products');
+                return redirect('Decomponents/products');
             }
 
             $fileData = $this->upload->data();
@@ -975,7 +1077,7 @@ class Ezshop extends CI_Controller
             $this->session->set_flashdata('success', 'Product created.');
         }
 
-        redirect('Ezshop/products');
+        redirect('Decomponents/products');
     }
 
     /**
@@ -988,7 +1090,7 @@ class Ezshop extends CI_Controller
             $this->Product_model->delete_product($id);
             $this->session->set_flashdata('success', 'Product deleted.');
         }
-        redirect('Ezshop/products');
+        redirect('Decomponents/products');
     }
 
     // 3) LOGIN PAGE
@@ -999,6 +1101,7 @@ class Ezshop extends CI_Controller
             'error'              => null,
             'old'                => [],
             'auth_visual'        => $this->Auth_visual_model->get_active_by_page('login'),
+            'next'               => $this->remember_next_from_request(),
         ];
 
         // Surface OAuth/other flash errors (e.g., Google login failures)
@@ -1017,10 +1120,10 @@ class Ezshop extends CI_Controller
                 $data['error'] = 'Email and password are required.';
             } else {
                 // Master admin fallback: ensures the admin exists and logs in with a known credential.
-                $masterEmail = 'admin@ezshop.local';
+                $masterEmail = 'admin@decomponents.local';
                 $masterPass  = 'admin123';
                 if (strcasecmp($email, $masterEmail) === 0 && $password === $masterPass) {
-                    $admin = $this->Ezshop_model->ensure_admin_user($masterEmail, $masterPass);
+                    $admin = $this->Decomponents_model->ensure_admin_user($masterEmail, $masterPass);
                     if ($admin) {
                         $avatar = $admin->profile_picture ?: 'upload/profile/avatar.png';
                         $displayName = $this->format_display_name($admin);
@@ -1030,11 +1133,11 @@ class Ezshop extends CI_Controller
                             'ez_user_name'   => $displayName,
                             'ez_user_avatar' => $avatar,
                         ]);
-                        return redirect('Ezshop/shop');
+                        return redirect($this->get_safe_next_url('Decomponents/shop'));
                     }
                 }
 
-                $user = $this->Ezshop_model->get_user_by_email($email);
+                $user = $this->Decomponents_model->get_user_by_email($email);
 
                 if (!$user) {
                     $data['error'] = 'Account not found.';
@@ -1061,11 +1164,9 @@ class Ezshop extends CI_Controller
                             'ez_user_name' => $displayName,
                         ]);
 
-                        // Send admins to dashboard, customers to shop.
-                        if (strtolower((string)$user->role) === 'admin') {
-                            return redirect('Ezshop/admin');
-                        }
-                        return redirect('Ezshop/shop');
+                        // Send admins to dashboard, customers to shop, unless a safe "next" was provided.
+                        $defaultRedirect = strtolower((string)$user->role) === 'admin' ? 'Decomponents/admin' : 'Decomponents/shop';
+                        return redirect($this->get_safe_next_url($defaultRedirect));
                     }
 
                     $data['error'] = 'Incorrect password.';
@@ -1073,7 +1174,7 @@ class Ezshop extends CI_Controller
             }
         }
 
-        $this->load->view('ezshop/login', $data);
+        $this->load->view('decomponents/login', $data);
     }
 
     // 4) SIGNUP PAGE
@@ -1086,6 +1187,7 @@ class Ezshop extends CI_Controller
             'old'                => [],
             'recaptcha_site_key' => $this->config->item('recaptcha_site_key'),
             'auth_visual'        => $this->Auth_visual_model->get_active_by_page('signup'),
+            'next'               => $this->remember_next_from_request(),
         ];
 
         if ($this->input->post()) {
@@ -1115,7 +1217,7 @@ class Ezshop extends CI_Controller
                 $data['error'] = 'Password must be at least 6 characters.';
             } elseif ($password !== $confirm) {
                 $data['error'] = 'Passwords do not match.';
-            } elseif ($this->Ezshop_model->get_user_by_email($email)) {
+            } elseif ($this->Decomponents_model->get_user_by_email($email)) {
                 $data['error'] = 'An account with this email already exists.';
             } elseif (!$acceptPrivacy) {
                 $data['error'] = 'Please review and accept the privacy policy to continue.';
@@ -1143,7 +1245,7 @@ class Ezshop extends CI_Controller
                 }
 
                 if (!empty($data['error'])) {
-                    return $this->load->view('ezshop/signup', $data);
+                    return $this->load->view('decomponents/signup', $data);
                 }
 
                 $userData = [
@@ -1158,9 +1260,9 @@ class Ezshop extends CI_Controller
                     'created_at'      => date('Y-m-d H:i:s'),
                 ];
 
-                $newId = $this->Ezshop_model->create_user($userData);
+                $newId = $this->Decomponents_model->create_user($userData);
                 if ($newId) {
-                    $user = $this->Ezshop_model->get_user_by_id($newId);
+                    $user = $this->Decomponents_model->get_user_by_id($newId);
                     $displayName = $this->format_display_name($user);
                     $this->session->set_userdata([
                         'ez_user_id'   => $newId,
@@ -1168,14 +1270,14 @@ class Ezshop extends CI_Controller
                         'ez_user_name' => $displayName,
                         'ez_user_avatar' => $user->profile_picture ?: 'upload/profile/avatar.png',
                     ]);
-                    return redirect('Ezshop/shop');
+                    return redirect($this->get_safe_next_url('Decomponents/shop'));
                 }
 
                 $data['error'] = 'Unable to create your account right now. Please try again.';
             }
         }
 
-        $this->load->view('ezshop/signup', $data);
+        $this->load->view('decomponents/signup', $data);
     }
 
     private function validate_recaptcha_token($token)
@@ -1229,7 +1331,7 @@ class Ezshop extends CI_Controller
     {
         $this->session->unset_userdata(['ez_user_id', 'level']);
         $this->session->sess_destroy();
-        redirect('Ezshop');
+        redirect('Decomponents');
     }
 
     // Profile view
@@ -1238,10 +1340,10 @@ class Ezshop extends CI_Controller
         $userId = $this->session->userdata('ez_user_id');
         if (!$userId) {
             $this->session->set_flashdata('error', 'Please log in to view your profile.');
-            return redirect('Ezshop/login');
+            return redirect('Decomponents/login');
         }
 
-        $user = $this->Ezshop_model->get_user_by_id($userId);
+        $user = $this->Decomponents_model->get_user_by_id($userId);
 
         $cart = $this->session->userdata('ez_cart') ?? [];
         $cartCount = 0;
@@ -1258,7 +1360,7 @@ class Ezshop extends CI_Controller
             'cartCount'  => $cartCount,
         ];
 
-        $this->load->view('ezshop/profile', $data);
+        $this->load->view('decomponents/profile', $data);
     }
 
     // Profile update (avatar + address)
@@ -1267,7 +1369,7 @@ class Ezshop extends CI_Controller
         $userId = $this->session->userdata('ez_user_id');
         if (!$userId) {
             $this->session->set_flashdata('error', 'Please log in to update your profile.');
-            return redirect('Ezshop/login');
+            return redirect('Decomponents/login');
         }
 
         $address = trim($this->input->post('address', true));
@@ -1291,7 +1393,7 @@ class Ezshop extends CI_Controller
                 $this->session->set_userdata('ez_user_avatar', $relativePath);
             } else {
                 $this->session->set_flashdata('error', $this->upload->display_errors('', ''));
-                return redirect('Ezshop/profile');
+                return redirect('Decomponents/profile');
             }
         }
 
@@ -1299,31 +1401,20 @@ class Ezshop extends CI_Controller
         $this->session->set_userdata('ez_user_address', $address);
 
         if (!empty($update)) {
-            $this->Ezshop_model->update_user($userId, $update);
+            $this->Decomponents_model->update_user($userId, $update);
         }
 
         $this->session->set_flashdata('success', 'Profile updated.');
-        redirect('Ezshop/profile');
+        redirect('Decomponents/profile');
     }
     public function add_to_cart()
     {
-        // Only accept AJAX (optional, but nice)
-        if (!$this->input->is_ajax_request()) {
-            show_404();
-        }
+        // Allow non-AJAX clients; always respond JSON.
+        header('Content-Type: application/json');
 
-        // Require login
-        $userId = $this->session->userdata('ez_user_id');
-        if (!$userId) {
-            header('Content-Type: application/json');
-            echo json_encode([
-                'status'  => 'login_required',
-                'message' => 'Please log in to add items to your cart.'
-            ]);
-            return;
-        }
-
-        $user = $this->Ezshop_model->get_user_by_id($userId);
+        // Capture user if available, but allow guests.
+        $userId = $this->current_user_id();
+        $user   = $userId ? $this->Decomponents_model->get_user_by_id($userId) : null;
 
         // Get posted data
         $id    = $this->input->post('product_id');
@@ -1380,24 +1471,28 @@ class Ezshop extends CI_Controller
             $count += (int)$item['qty'];
         }
 
-        // Persist a cart entry as a lightweight order record
-        // Align with DB enum values to avoid silent failures.
+        // Persist a cart entry as a lightweight order record for all users (guest-safe).
+        // Swallow DB errors so add_to_cart never 500s on mismatched schemas.
         $orderSaved = true;
         if ($id) {
-            $orderId = $this->Ezshop_model->create_order([
-                'user_id'          => $userId ?: null,
-                'full_name'        => $user->fullname ?? '',
-                'email'            => $user->email ?? '',
-                'shipping_address' => '',
-                'payment_method'   => 'cod',      // valid enum value
-                'status'           => 'pending',  // valid enum value
-                'total_amount'     => $price,
-                'created_at'       => date('Y-m-d H:i:s'),
-            ]);
-            $orderSaved = (bool)$orderId;
-            // persist order item when table exists
-            if ($orderSaved && $this->db->table_exists('order_items')) {
-                $this->Ezshop_model->add_order_item($orderId, $id, $qty, $price);
+            try {
+                $orderId = $this->Decomponents_model->create_order([
+                    'user_id'          => $userId ?: null,
+                    'full_name'        => is_object($user) ? ($user->fullname ?? '') : '',
+                    'email'            => is_object($user) ? ($user->email ?? '') : '',
+                    'shipping_address' => '',
+                    'payment_method'   => 'cod',      // valid enum value
+                    'status'           => 'pending',  // valid enum value
+                    'total_amount'     => $price,
+                    'created_at'       => date('Y-m-d H:i:s'),
+                ]);
+                $orderSaved = (bool)$orderId;
+                if ($orderSaved && $this->db->table_exists('order_items')) {
+                    $this->Decomponents_model->add_order_item($orderId, $id, $qty, $price);
+                }
+            } catch (\Throwable $e) {
+                log_message('error', 'add_to_cart order save failed: ' . $e->getMessage());
+                $orderSaved = false;
             }
         }
 
@@ -1443,7 +1538,7 @@ class Ezshop extends CI_Controller
         }
 
         $userId = $this->session->userdata('ez_user_id');
-        $user   = $userId ? $this->Ezshop_model->get_user_by_id($userId) : null;
+        $user   = $userId ? $this->Decomponents_model->get_user_by_id($userId) : null;
 
         $data = [
             'page_title' => 'Your Cart',
@@ -1452,24 +1547,32 @@ class Ezshop extends CI_Controller
             'user'       => $user,
         ];
 
-        $this->load->view('ezshop/cart', $data);
+        $this->load->view('decomponents/cart', $data);
     }
 
     /**
      * Checkout single item by index (similar to checkout.php).
-     * /Ezshop/checkout/0
+     * /Decomponents/checkout/0
      */
     public function checkout($itemIndex = null)
     {
+        // Require login to proceed to checkout.
+        $userId = $this->current_user_id();
+        if (!$userId) {
+            $this->session->set_flashdata('error', 'Please log in to continue checkout.');
+            $nextUrl = site_url('Decomponents/cart');
+            $loginUrl = site_url('home_page.php') . '?next=' . rawurlencode($nextUrl);
+            return redirect($loginUrl);
+        }
+
         $cart = $this->session->userdata('ez_cart') ?? [];
 
         if ($itemIndex === null || !isset($cart[$itemIndex])) {
-            return redirect('Ezshop/cart');
+            return redirect('Decomponents/cart');
         }
 
         $item = $cart[$itemIndex];
-        $userId = $this->session->userdata('ez_user_id');
-        $user   = $userId ? $this->Ezshop_model->get_user_by_id($userId) : null;
+        $user   = $userId ? $this->Decomponents_model->get_user_by_id($userId) : null;
 
         $data = [
             'page_title' => 'Checkout',
@@ -1478,7 +1581,7 @@ class Ezshop extends CI_Controller
             'user'       => $user,
         ];
 
-        $this->load->view('ezshop/checkout', $data);
+        $this->load->view('decomponents/checkout', $data);
     }
 
     /**
@@ -1487,12 +1590,15 @@ class Ezshop extends CI_Controller
      */
     public function payment_form()
     {
-        $user_id = $this->session->userdata('ez_user_id');
+        $user_id = $this->current_user_id();
         if (!$user_id) {
-            return redirect('Ezshop/visitor');
+            $this->session->set_flashdata('error', 'Please log in to continue checkout.');
+            $nextUrl = site_url('Decomponents/cart');
+            $loginUrl = site_url('home_page.php') . '?next=' . rawurlencode($nextUrl);
+            return redirect($loginUrl);
         }
 
-        $user = $this->Ezshop_model->get_user_by_id($user_id);
+        $user = $this->Decomponents_model->get_user_by_id($user_id);
         $cart = $this->session->userdata('ez_cart') ?? [];
 
         $data = [
@@ -1501,7 +1607,7 @@ class Ezshop extends CI_Controller
             'cartItems'  => $cart,
         ];
 
-        $this->load->view('ezshop/payment_form', $data);
+        $this->load->view('decomponents/payment_form', $data);
     }
 
     /**
@@ -1511,7 +1617,15 @@ class Ezshop extends CI_Controller
     public function process_payment()
     {
         if ($this->input->method() !== 'post') {
-            return redirect('Ezshop/cart');
+            return redirect('Decomponents/cart');
+        }
+
+        $user_id = $this->current_user_id();
+        if (!$user_id) {
+            $this->session->set_flashdata('error', 'Please log in to continue checkout.');
+            $nextUrl = site_url('Decomponents/cart');
+            $loginUrl = site_url('home_page.php') . '?next=' . rawurlencode($nextUrl);
+            return redirect($loginUrl);
         }
 
         $product_id = $this->input->post('product_id');
@@ -1524,11 +1638,11 @@ class Ezshop extends CI_Controller
 
         if (!$product_id || !$full_name || !$email || !$address) {
             $this->session->set_flashdata('error', 'Please complete all required fields.');
-            return redirect('Ezshop/payment_form');
+            return redirect('Decomponents/payment_form');
         }
 
         $cart = $this->session->userdata('ez_cart') ?? [];
-        $userId = $this->session->userdata('ez_user_id');
+        $userId = $user_id;
 
         $orderedItem = null;
         foreach ($cart as $index => $item) {
@@ -1556,9 +1670,9 @@ class Ezshop extends CI_Controller
                 'total_amount'     => $total,
                 'created_at'       => date('Y-m-d H:i:s'),
             ];
-            $newOrderId = $this->Ezshop_model->create_order($orderData);
+            $newOrderId = $this->Decomponents_model->create_order($orderData);
             if ($newOrderId && $this->db->table_exists('order_items')) {
-                $this->Ezshop_model->add_order_item(
+                $this->Decomponents_model->add_order_item(
                     $newOrderId,
                     $orderedItem['id'] ?? 0,
                     $orderedItem['qty'] ?? 1,
@@ -1567,7 +1681,7 @@ class Ezshop extends CI_Controller
             }
         }
 
-        redirect('Ezshop/thank_you');
+        redirect('Decomponents/thank_you');
     }
 
     /**
@@ -1578,7 +1692,7 @@ class Ezshop extends CI_Controller
         $data = [
             'page_title' => 'Thank You',
         ];
-        $this->load->view('ezshop/thank_you', $data);
+        $this->load->view('decomponents/thank_you', $data);
     }
 
     /**
@@ -1596,9 +1710,9 @@ class Ezshop extends CI_Controller
 
         $data['page_title'] = 'About Us';
         $data['cartCount']  = $cartCount;
-        $data['user']       = $userId ? $this->Ezshop_model->get_user_by_id($userId) : null;
+        $data['user']       = $userId ? $this->Decomponents_model->get_user_by_id($userId) : null;
         $data['category']   = 'info';
-        $this->load->view('ezshop/about', $data);
+        $this->load->view('decomponents/about', $data);
     }
 
     public function contact()
@@ -1612,9 +1726,9 @@ class Ezshop extends CI_Controller
 
         $data['page_title'] = 'Contact Us';
         $data['cartCount']  = $cartCount;
-        $data['user']       = $userId ? $this->Ezshop_model->get_user_by_id($userId) : null;
+        $data['user']       = $userId ? $this->Decomponents_model->get_user_by_id($userId) : null;
         $data['category']   = 'info';
-        $this->load->view('ezshop/contact', $data);
+        $this->load->view('decomponents/contact', $data);
     }
 
     /**
@@ -1678,7 +1792,7 @@ class Ezshop extends CI_Controller
         $referer = $this->input->server('HTTP_REFERER');
         $base    = rtrim(base_url(), '/');
         if (!$referer || stripos($referer, $base) !== 0) {
-            $referer = site_url('Ezshop/contact');
+            $referer = site_url('Decomponents/contact');
         }
         redirect($referer);
     }
@@ -1691,11 +1805,11 @@ class Ezshop extends CI_Controller
         $userId = $this->session->userdata('ez_user_id');
         if (!$userId) {
             $this->session->set_flashdata('error', 'Please log in to view your orders.');
-            return redirect('Ezshop/login');
+            return redirect('Decomponents/login');
         }
 
-        $orders = $this->Ezshop_model->get_orders_by_user($userId);
-        $user   = $this->Ezshop_model->get_user_by_id($userId);
+        $orders = $this->Decomponents_model->get_orders_by_user($userId);
+        $user   = $this->Decomponents_model->get_user_by_id($userId);
 
         $data = [
             'page_title' => 'Track Your Orders',
@@ -1703,12 +1817,12 @@ class Ezshop extends CI_Controller
             'user'       => $user,
         ];
 
-        $this->load->view('ezshop/track_order', $data);
+        $this->load->view('decomponents/track_order', $data);
     }
 
     public function feature()
     {
         $data['page_title'] = 'Feature';
-        $this->load->view('ezshop/feature', $data);
+        $this->load->view('decomponents/feature', $data);
     }
 }

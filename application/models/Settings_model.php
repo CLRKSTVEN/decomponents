@@ -1,10 +1,10 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 class Settings_model extends CI_Model
 {
     private $defaults = [
-        'site_name'     => 'EZ-Shop',
+        'site_name'     => 'EZShop',
         'tagline'       => 'Curated fits, modern essentials.',
         'support_email' => 'support@ezshop.local',
         'support_phone' => '+63 900 000 0000',
@@ -15,7 +15,7 @@ class Settings_model extends CI_Model
         'youtube_url'   => 'https://youtube.com',
         'hero_title'    => 'Elevate Your Style, Define Your Identity',
         'hero_subtitle' => 'Discover curated fashion that speaks to your unique personality. From sophisticated workwear to weekend essentials.',
-        'hero_cta_label'=> 'Shop Now',
+        'hero_cta_label' => 'Shop Now',
         'hero_cta_link' => 'Ezshop/shop',
     ];
 

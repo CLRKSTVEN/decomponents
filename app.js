@@ -9,6 +9,11 @@ let productCountLabel = document.querySelector('#productCount');
 let emptyMessage = document.querySelector('.decom-empty');
 let categoryTiles = document.querySelectorAll('.decom-category');
 
+const isLoggedIn = Boolean(window.DE_IS_LOGGED_IN);
+const loginPageUrl = window.DE_LOGIN_URL || '/home_page.php';
+const afterLoginUrl = window.DE_AFTER_LOGIN_URL || `${window.location.origin}${window.location.pathname}?showCart=1`;
+const addToCartUrl = window.DE_ADD_TO_CART_URL || null;
+
 let products = [];
 let cart = [];
 let activeCategory = 'all';
@@ -18,12 +23,102 @@ const toggleCart = () => {
     body.classList.toggle('showCart');
 };
 
+const openCartPanel = () => {
+    if (body && !body.classList.contains('showCart')) {
+        body.classList.add('showCart');
+    }
+};
+
+const markCartForPostLogin = () => {
+    try {
+        localStorage.setItem('cartOpenAfterLogin', '1');
+        localStorage.setItem('cartRedirectAfterLogin', afterLoginUrl);
+    } catch (e) {
+        // Ignore storage issues (e.g., private mode).
+    }
+};
+
+const buildLoginRedirectUrl = () => {
+    const separator = loginPageUrl.indexOf('?') !== -1 ? '&' : '?';
+    return `${loginPageUrl}${separator}next=${encodeURIComponent(afterLoginUrl)}`;
+};
+
+const redirectGuestForLogin = () => {
+    markCartForPostLogin();
+    window.location.href = buildLoginRedirectUrl();
+};
+
+const openCartFromFlags = () => {
+    const params = new URLSearchParams(window.location.search);
+    const queryFlag = params.get('showCart') === '1';
+    let storedFlag = false;
+
+    try {
+        storedFlag =
+            localStorage.getItem('cartOpenAfterLogin') === '1' ||
+            localStorage.getItem('cartRedirectAfterLogin') === afterLoginUrl ||
+            localStorage.getItem('cartRedirectAfterLogin') === window.location.href;
+        if (storedFlag) {
+            localStorage.removeItem('cartOpenAfterLogin');
+            localStorage.removeItem('cartRedirectAfterLogin');
+        }
+    } catch (e) {
+        storedFlag = false;
+    }
+
+    if ((queryFlag || storedFlag) && body && !body.classList.contains('showCart')) {
+        body.classList.add('showCart');
+    }
+};
+
 if (iconCart) {
     iconCart.addEventListener('click', toggleCart);
 }
 if (closeCart) {
     closeCart.addEventListener('click', toggleCart);
 }
+
+const findProductById = (id) => {
+    return products.find(p => String(p.id) === String(id));
+};
+
+const syncCartItemToServer = (productId, quantity) => {
+    if (!addToCartUrl) return;
+
+    const product = findProductById(productId);
+    const qty = quantity || 1;
+    if (!product) return;
+
+    const payload = new URLSearchParams();
+    payload.append('product_id', product.id);
+    payload.append('product_name', product.name || '');
+    payload.append('product_price', product.price || 0);
+    payload.append('product_image', product.image || '');
+    payload.append('qty', qty);
+
+    fetch(addToCartUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'include',
+        body: payload.toString()
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.status === 'login_required') {
+                redirectGuestForLogin();
+                return;
+            }
+            if (data && data.status === 'ok' && typeof data.cartCount !== 'undefined' && iconCartSpan) {
+                iconCartSpan.innerText = data.cartCount;
+            }
+        })
+        .catch(() => {
+            // Silently keep local cart if server call fails.
+        });
+};
 
 const getFilteredProducts = () => {
     return activeCategory === 'all'
@@ -105,10 +200,19 @@ const addToCart = (product_id) => {
     }
     addCartToHTML();
     addCartToMemory();
+    openCartPanel();
+
+    if (addToCartUrl) {
+        syncCartItemToServer(product_id, 1);
+    }
 };
 
 const addCartToMemory = () => {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    try {
+        localStorage.setItem('cart', JSON.stringify(cart));
+    } catch (e) {
+        // Ignore storage failures (e.g., private mode).
+    }
 };
 
 const addCartToHTML = () => {
@@ -217,7 +321,9 @@ if (categoryTiles && categoryTiles.length) {
 const normalizeImage = (path) => {
     if (!path) return '';
     if (path.startsWith('http') || path.startsWith('//') || path.startsWith('/')) return path;
-    return `products/${path.replace(/^\\//, '')}`;
+    // Strip any leading slashes so we can safely prefix the products folder.
+    const cleanPath = path.replace(/^\/+/, '');
+    return `products/${cleanPath}`;
 };
 
 const normalizeProducts = (items) => {
@@ -247,6 +353,7 @@ const initApp = () => {
         populateCategories();
         addDataToHTML();
         loadCartFromStorage();
+        openCartFromFlags();
     };
 
     if (Array.isArray(window.PRODUCT_DATA) && window.PRODUCT_DATA.length) {

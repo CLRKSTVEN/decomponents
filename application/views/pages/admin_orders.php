@@ -125,7 +125,7 @@
                                                     <td><?= htmlspecialchars($order['payment_method'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
                                                     <td><?= htmlspecialchars(date('M d, Y', strtotime($order['created_at'])), ENT_QUOTES, 'UTF-8'); ?></td>
                                                     <td>
-                                                        <form method="post" action="<?= site_url('Ezshop/update_order_status'); ?>" class="form-inline">
+                                                        <form method="post" action="<?= site_url('Decomponents/update_order_status'); ?>" class="form-inline">
                                                             <input type="hidden" name="order_id" value="<?= (int)$order['id']; ?>">
                                                             <select name="status" class="form-control form-control-sm" onchange="this.form.submit();">
                                                                 <?php
@@ -139,7 +139,7 @@
                                                     <td>
                                                         <div class="d-flex flex-column gap-1" style="gap:6px;">
                                                             <?php if (($order['status'] ?? '') === 'pending'): ?>
-                                                                <form method="post" action="<?= site_url('Ezshop/update_order_status'); ?>" style="margin:0;">
+                                                                <form method="post" action="<?= site_url('Decomponents/update_order_status'); ?>" style="margin:0;">
                                                                     <input type="hidden" name="order_id" value="<?= (int)$order['id']; ?>">
                                                                     <input type="hidden" name="status" value="paid">
                                                                     <button type="submit" class="btn btn-sm btn-outline-primary">Approve (Mark Paid)</button>
@@ -147,7 +147,7 @@
                                                             <?php endif; ?>
 
                                                             <?php if (($order['status'] ?? '') !== 'fulfilled'): ?>
-                                                                <form method="post" action="<?= site_url('Ezshop/update_order_status'); ?>" style="margin:0;">
+                                                                <form method="post" action="<?= site_url('Decomponents/update_order_status'); ?>" style="margin:0;">
                                                                     <input type="hidden" name="order_id" value="<?= (int)$order['id']; ?>">
                                                                     <input type="hidden" name="status" value="fulfilled">
                                                                     <button type="submit" class="btn btn-sm btn-outline-success">Mark Shipped</button>

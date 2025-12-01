@@ -99,7 +99,7 @@
                                                             Edit
                                                         </button>
                                                         <a class="btn btn-sm btn-outline-danger"
-                                                            href="<?= site_url('Ezshop/delete_product/' . $p['id']); ?>"
+                                                            href="<?= site_url('Decomponents/delete_product/' . $p['id']); ?>"
                                                             onclick="return confirm('Delete this product?');">
                                                             Delete
                                                         </a>
@@ -129,7 +129,7 @@
     <div class="modal fade" id="productModal" tabindex="-1" role="dialog"
         aria-labelledby="productModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
-            <form id="productForm" action="<?= site_url('Ezshop/save_product'); ?>"
+            <form id="productForm" action="<?= site_url('Decomponents/save_product'); ?>"
                 method="post" enctype="multipart/form-data" class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="productModalLabel">Add Product</h5>
@@ -243,7 +243,7 @@
             function resetForm() {
                 $form[0].reset();
                 $('#productId').val('');
-                $form.attr('action', '<?= site_url('Ezshop/save_product'); ?>');
+                $form.attr('action', '<?= site_url('Decomponents/save_product'); ?>');
                 $modalTitle.text('Add Product');
                 $currentImage.hide();
             }
@@ -279,7 +279,7 @@
                 $('#is_featured').prop('checked', String(featured) === '1');
 
                 // set action with id
-                $form.attr('action', '<?= site_url('Ezshop/save_product/'); ?>' + id);
+                $form.attr('action', '<?= site_url('Decomponents/save_product/'); ?>' + id);
 
                 if (image) {
                     $currentImgTag.attr('src', baseUrl + image);

@@ -10,6 +10,11 @@ $route['login/auth'] = 'login/auth';
 $route['home_page.php'] = 'login';
 $route['home_page']     = 'login';
 
+$route['Decomponents'] = 'Decomponents';
+$route['Decomponents/(:any)'] = 'Decomponents/$1';
+$route['decomponents'] = 'Decomponents';
+$route['decomponents/(:any)'] = 'Decomponents/$1';
+
 // Provincial routes
 $route['provincial']           = 'provincial/index';      // optional
 $route['provincial/standings'] = 'provincial/index';      // same landing

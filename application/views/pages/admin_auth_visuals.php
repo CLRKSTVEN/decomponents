@@ -18,7 +18,7 @@
                             <p class="text-muted mb-0">Manage the hero content and imagery shown on the Login and Signup screens.</p>
                         </div>
                         <div class="col-auto">
-                            <a href="<?= site_url('Ezshop/auth_visuals'); ?>" class="btn btn-light">
+                            <a href="<?= site_url('Decomponents/auth_visuals'); ?>" class="btn btn-light">
                                 <i class="bi bi-plus-circle"></i> New visual
                             </a>
                         </div>
@@ -75,7 +75,7 @@
                                         </div>
                                     </div>
 
-                                    <form action="<?= site_url('Ezshop/save_auth_visual'); ?>" method="post" enctype="multipart/form-data">
+                                    <form action="<?= site_url('Decomponents/save_auth_visual'); ?>" method="post" enctype="multipart/form-data">
                                         <?php if ($editing): ?>
                                             <input type="hidden" name="id" value="<?= (int)$editing['id']; ?>">
                                         <?php endif; ?>
@@ -153,7 +153,7 @@
                                             <button type="submit" class="btn btn-primary mr-2">
                                                 <i class="bi bi-save"></i> Save visual
                                             </button>
-                                            <a href="<?= site_url('Ezshop/auth_visuals'); ?>" class="btn btn-outline-secondary">Cancel</a>
+                                            <a href="<?= site_url('Decomponents/auth_visuals'); ?>" class="btn btn-outline-secondary">Cancel</a>
                                         </div>
                                     </form>
                                 </div>
@@ -268,8 +268,8 @@
                                                                 <small class="text-muted"><?= htmlspecialchars($visual['updated_at'] ?? $visual['created_at'] ?? '', ENT_QUOTES, 'UTF-8'); ?></small>
                                                             </td>
                                                             <td class="text-right">
-                                                                <a href="<?= site_url('Ezshop/auth_visuals/' . $visual['id']); ?>" class="btn btn-sm btn-outline-primary">Edit</a>
-                                                                <a href="<?= site_url('Ezshop/delete_auth_visual/' . $visual['id']); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this visual?');">Delete</a>
+                                                                <a href="<?= site_url('Decomponents/auth_visuals/' . $visual['id']); ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+                                                                <a href="<?= site_url('Decomponents/delete_auth_visual/' . $visual['id']); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this visual?');">Delete</a>
                                                             </td>
                                                         </tr>
                                                     <?php endforeach; ?>

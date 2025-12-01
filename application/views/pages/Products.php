@@ -6,8 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products - DeComponents</title>
     <link rel="stylesheet" href="<?php echo base_url('assets/css/design.css'); ?>">
+    <?php
+    $isLoggedIn = (bool)$this->session->userdata('ez_user_id') || (bool)$this->session->userdata('userID');
+    $loginUrl = site_url('home_page.php');
+    $afterLoginUrl = site_url('products') . '?showCart=1';
+    $addToCartUrl = site_url('Decomponents/add_to_cart');
+    ?>
     <script>
         window.PRODUCT_DATA = <?php echo json_encode(isset($products) ? $products : []); ?>;
+        window.DE_IS_LOGGED_IN = <?php echo json_encode($isLoggedIn); ?>;
+        window.DE_LOGIN_URL = <?php echo json_encode($loginUrl); ?>;
+        window.DE_AFTER_LOGIN_URL = <?php echo json_encode($afterLoginUrl); ?>;
+        window.DE_ADD_TO_CART_URL = <?php echo json_encode($addToCartUrl); ?>;
     </script>
 </head>
 

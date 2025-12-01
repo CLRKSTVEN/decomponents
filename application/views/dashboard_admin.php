@@ -29,7 +29,7 @@
                             <p class="text-muted mb-0">Quick overview of your store.</p>
                         </div>
                         <div class="col-auto">
-                            <a href="<?= site_url('Ezshop/products'); ?>" class="btn btn-primary">
+                            <a href="<?= site_url('Decomponents/products'); ?>" class="btn btn-primary">
                                 <i class="bi bi-plus-lg"></i> Add Product
                             </a>
                         </div>
@@ -184,7 +184,7 @@
                                 <div class="card-body">
                                     <div class="d-flex align-items-center mb-3">
                                         <h5 class="card-title mb-0">Recent Orders</h5>
-                                        <a href="<?= site_url('Ezshop/orders'); ?>" class="ml-auto text-primary">View all</a>
+                                        <a href="<?= site_url('Decomponents/orders'); ?>" class="ml-auto text-primary">View all</a>
                                     </div>
                                     <div class="table-responsive">
                                         <table class="table table-hover mb-0">

@@ -275,7 +275,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `FirstName`, `MiddleName`, `LastName`, `email`, `google_id`, `password`, `profile_picture`, `role`, `created_at`) VALUES
 (6, 'Clark', '', 'Edong', 'reg@gmail.com', NULL, '$2y$10$z.pseQ5hsTm7d6rpu3yH4.yIoFVmIhFV9CiQK6Mk9K0UuNCYADG.u', 'upload/profile/avatar_signup_1763918274.jpg', 'customer', '2025-11-24 01:17:54'),
-(10, 'Admin', '', 'User', 'admin@ezshop.local', NULL, '$2y$10$2qHWmEhFK6o/OWRqJzkCK.gYGux1N24dGjCbMXAh0GM...', 'Products/default-profile.png', 'admin', '2025-11-24 14:26:05'),
+(10, 'Admin', '', 'User', 'admin@decomponents.local', NULL, '$2y$10$2qHWmEhFK6o/OWRqJzkCK.gYGux1N24dGjCbMXAh0GM...', 'Products/default-profile.png', 'admin', '2025-11-24 14:26:05'),
 (11, 'CLARkk.', '', 'CLARkk.', 'eclarksteven@gmail.com', NULL, '$2y$10$iFf3cqR8D5FiUyg95gK9veDnrGMC/73y5gz6hnFqnYpLfQkYhtr5S', 'upload/profile/avatar_11_1763996610.jpg', 'customer', '2025-11-24 22:48:36'),
 (12, 'Clark', 'Steven', 'Edong', 'clark.eksdi@gmail.com', NULL, '$2y$10$dtChLWpy7XscCHybpOR3LOnL783z6BNHIzjqitPuTOhsLlEC58IGa', 'https://lh3.googleusercontent.com/a/ACg8ocIO-yoOp9qIJl28e0y79qvCuBiSNLeCZh7rAnO2IKSSeo9ssyxs=s96-c', 'customer', '2025-11-25 00:23:17'),
 (13, 'Microbots', '', 'Microbots', 'microbots06@gmail.com', NULL, '$2y$10$H9eyYSLYoyMHDzDtLjcEVeOs.ussqWXhY4mbAoDG/j4KCpXioxpTu', 'https://lh3.googleusercontent.com/a/ACg8ocIQTuMw0020EchHiIAU6vBrADvie9CieNVswXSAKezavL-pRQ=s96-c', 'customer', '2025-11-25 00:29:37'),
