@@ -1,7 +1,7 @@
 Options -Indexes
 RewriteEngine On
+RewriteBase /decomponents/
 
-# Send everything to CI3 front controller
+# Send everything (including directory requests) to the CI3 front controller
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php/$1 [L]

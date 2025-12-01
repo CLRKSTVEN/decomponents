@@ -56,15 +56,6 @@ CREATE TABLE `categories` (
   `description` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `categories`
---
-
-INSERT INTO `categories` (`id`, `name`, `slug`, `description`) VALUES
-(1, 'Menswear', 'menswear', 'Refined basics and staples for any casual office or creative meetup.'),
-(2, 'Womenswear', 'womenswear', 'Daily outfits with breathable fabrics and soft silhouettes.'),
-(3, 'Accessories', 'accessories', 'Statement pieces that finish the look without overpowering it.'),
-(4, 'Footwear', 'footwear', 'Comfort-forward sneakers and sandals curated for all-day wear.');
 
 -- --------------------------------------------------------
 
@@ -102,10 +93,6 @@ CREATE TABLE `contact_staff` (
 -- Dumping data for table `contact_staff`
 --
 
-INSERT INTO `contact_staff` (`id`, `name`, `email`, `phone`, `role`, `created_at`) VALUES
-(1, 'RBreezy', 'rega@gmail.com', NULL, NULL, '2025-11-25 11:34:35');
-
--- --------------------------------------------------------
 
 --
 -- Table structure for table `orders`
@@ -123,25 +110,6 @@ CREATE TABLE `orders` (
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `orders`
---
-
-INSERT INTO `orders` (`id`, `user_id`, `full_name`, `email`, `shipping_address`, `payment_method`, `status`, `total_amount`, `created_at`) VALUES
-(19, 6, 'Clark  Edong', 'reg@gmail.com', '', 'cod', 'fulfilled', 2012.33, '2025-11-24 16:03:19'),
-(20, 6, 'Clark  Edong', 'reg@gmail.com', 'asdasd', 'cod', 'fulfilled', 2012.33, '2025-11-24 16:08:41'),
-(21, 6, 'Clark  Edong', 'reg@gmail.com', '', 'cod', 'paid', 1277.82, '2025-11-26 08:25:05'),
-(22, 6, 'Clark  Edong', 'reg@gmail.com', 'asdasd', 'cod', 'paid', 1277.82, '2025-11-26 08:25:38'),
-(23, 6, 'Clark  Edong', 'reg@gmail.com', '', 'cod', 'paid', 2012.33, '2025-11-27 08:13:30'),
-(24, 6, 'Clark  Edong', 'reg@gmail.com', 'asdasdasdasd', 'cod', 'paid', 2012.33, '2025-11-27 08:13:48'),
-(25, 6, 'Clark  Edong', 'reg@gmail.com', '', 'cod', 'paid', 1078.72, '2025-11-27 11:38:35'),
-(26, 6, 'Clark  Edong', 'reg@gmail.com', 'fghfgh', 'cod', 'paid', 1078.72, '2025-11-27 11:38:54');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `order_items`
---
 
 CREATE TABLE `order_items` (
   `id` int(11) NOT NULL,
@@ -151,23 +119,7 @@ CREATE TABLE `order_items` (
   `unit_price` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `order_items`
---
 
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `unit_price`) VALUES
-(4, 21, 128, 1, 1277.82),
-(5, 22, 128, 1, 1277.82),
-(6, 23, 116, 1, 2012.33),
-(7, 24, 116, 1, 2012.33),
-(8, 25, 139, 1, 1078.72),
-(9, 26, 139, 1, 1078.72);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `products`
---
 
 CREATE TABLE `products` (
   `id` int(11) NOT NULL,
@@ -182,190 +134,6 @@ CREATE TABLE `products` (
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `products`
---
-
-INSERT INTO `products` (`id`, `category_id`, `name`, `slug`, `description`, `price`, `image`, `is_featured`, `inventory`, `created_at`) VALUES
-(1, 1, '2', '2', '', 2920.81, 'Products/2.jpg', 0, 0, '2025-01-01 00:00:00'),
-(2, 1, '2', '2-2', '', 1452.47, 'Products/2.png', 0, 0, '2025-01-01 00:00:00'),
-(3, 1, '3', '3', '', 2790.09, 'Products/3.jpg', 0, 0, '2025-01-01 00:00:00'),
-(4, 3, 'Museum Sport Gunmetal', 'museum-sport-gunmetal', '', 1543.10, 'Products/Accessories/Museum-Sport-Gunmetal.webp', 0, 0, '2025-01-01 00:00:00'),
-(5, 3, 'Y2Kcap', 'y2kcap', '', 1303.37, 'Products/Accessories/Y2Kcap.jpg', 0, 0, '2025-01-01 00:00:00'),
-(6, 3, 'Bag Royce Newyork', 'bag-royce-newyork', '', 2435.49, 'Products/Accessories/bag-royce-newyork.webp', 0, 0, '2025-01-01 00:00:00'),
-(7, 3, 'Baguereza', 'baguereza', '', 2647.29, 'Products/Accessories/bagueREZA.jpg', 0, 0, '2025-01-01 00:00:00'),
-(8, 3, 'Blacksquarependant', 'blacksquarependant', '', 1844.19, 'Products/Accessories/blacksquarependant.jpg', 0, 0, '2025-01-01 00:00:00'),
-(9, 3, 'Chainmail', 'chainmail', '', 2319.80, 'Products/Accessories/chainmail.jpg', 0, 0, '2025-01-01 00:00:00'),
-(10, 3, 'David Yurman Chevron Tagpendant', 'david-yurman-chevron-tagpendant', '', 2877.60, 'Products/Accessories/david-yurman-chevron-tagpendant.webp', 0, 0, '2025-01-01 00:00:00'),
-(11, 3, 'Dessertscarf', 'dessertscarf', '', 1341.03, 'Products/Accessories/dessertscarf.jpg', 0, 0, '2025-01-01 00:00:00'),
-(12, 3, 'Eton Silksatin', 'eton-silksatin', '', 1136.71, 'Products/Accessories/eton-silksatin.webp', 0, 0, '2025-01-01 00:00:00'),
-(13, 3, 'Ferragamo Florence Cardholder', 'ferragamo-florence-cardholder', '', 1432.70, 'Products/Accessories/ferragamo-florence-cardholder.webp', 0, 0, '2025-01-01 00:00:00'),
-(14, 3, 'Flongoearrings', 'flongoearrings', '', 1668.32, 'Products/Accessories/flongoearrings.jpg', 0, 0, '2025-01-01 00:00:00'),
-(15, 3, 'Gibbonrecto', 'gibbonrecto', '', 2092.24, 'Products/Accessories/gibbonrecto.jpg', 0, 0, '2025-01-01 00:00:00'),
-(16, 3, 'Gucci Acetate', 'gucci-acetate', '', 1389.40, 'Products/Accessories/gucci-acetate.webp', 0, 0, '2025-01-01 00:00:00'),
-(17, 3, 'Gucci Aviator Sunglasses', 'gucci-aviator-sunglasses', '', 1910.18, 'Products/Accessories/gucci-aviator-sunglasses.webp', 0, 0, '2025-01-01 00:00:00'),
-(18, 3, 'Gucci Pilot Sunglasses', 'gucci-pilot-sunglasses', '', 1520.20, 'Products/Accessories/gucci-pilot-sunglasses.webp', 0, 0, '2025-01-01 00:00:00'),
-(19, 3, 'Harrypotter', 'harrypotter', '', 1719.12, 'Products/Accessories/harrypotter.jpg', 0, 0, '2025-01-01 00:00:00'),
-(20, 3, 'Heartearring', 'heartearring', '', 1952.03, 'Products/Accessories/heartearring.jpg', 0, 0, '2025-01-01 00:00:00'),
-(21, 3, 'Honeyring', 'honeyring', '', 2194.69, 'Products/Accessories/honeyring.jpg', 0, 0, '2025-01-01 00:00:00'),
-(22, 3, 'Linkchain', 'linkchain', '', 1464.67, 'Products/Accessories/linkchain.jpg', 0, 0, '2025-01-01 00:00:00'),
-(23, 3, 'Mcm Lauretos Small Bag', 'mcm-lauretos-small-bag', '', 1934.25, 'Products/Accessories/mcm-lauretos-small-bag.jpg', 0, 0, '2025-01-01 00:00:00'),
-(24, 3, 'Mcm Visetos Monogram Bag', 'mcm-visetos-monogram-bag', '', 2411.84, 'Products/Accessories/mcm-visetos-monogram-bag.webp', 0, 0, '2025-01-01 00:00:00'),
-(25, 3, 'Mordredglasses', 'mordredglasses', '', 1749.95, 'Products/Accessories/mordredglasses.jpg', 0, 0, '2025-01-01 00:00:00'),
-(26, 3, 'Naillacquers', 'naillacquers', '', 1634.94, 'Products/Accessories/naillacquers.jpg', 0, 0, '2025-01-01 00:00:00'),
-(27, 3, 'Octuposearring', 'octuposearring', '', 2077.71, 'Products/Accessories/octuposearring.jpg', 0, 0, '2025-01-01 00:00:00'),
-(28, 3, 'Ringholder', 'ringholder', '', 2805.94, 'Products/Accessories/ringholder.jpg', 0, 0, '2025-01-01 00:00:00'),
-(29, 3, 'Rolex Oyster Perpetual Submariner', 'rolex-oyster-perpetual-submariner', '', 1981.80, 'Products/Accessories/rolex-oyster-perpetual-submariner.webp', 0, 0, '2025-01-01 00:00:00'),
-(30, 3, 'Rolexx', 'rolexx', '', 2286.34, 'Products/Accessories/rolexx.jpg', 0, 0, '2025-01-01 00:00:00'),
-(31, 3, 'Tockr Watch', 'tockr-watch', '', 2392.59, 'Products/Accessories/tockr-watch.webp', 0, 0, '2025-01-01 00:00:00'),
-(32, 3, 'Trafalgar Silk Necktie', 'trafalgar-silk-necktie', '', 1225.83, 'Products/Accessories/trafalgar-silk-necktie.webp', 0, 0, '2025-01-01 00:00:00'),
-(35, 1, '11', '11', '', 1118.83, 'Products/MensClothing/11.jpg', 0, 0, '2025-01-01 00:00:00'),
-(36, 1, '12', '12', '', 2607.19, 'Products/MensClothing/12.png', 0, 0, '2025-01-01 00:00:00'),
-(37, 1, '13', '13', '', 1122.05, 'Products/MensClothing/13.jpg', 0, 0, '2025-01-01 00:00:00'),
-(38, 1, '14', '14', '', 2556.11, 'Products/MensClothing/14.jpg', 0, 0, '2025-01-01 00:00:00'),
-(39, 1, '15', '15', '', 1836.12, 'Products/MensClothing/15.jpg', 0, 0, '2025-01-01 00:00:00'),
-(40, 1, '16', '16', '', 1276.79, 'Products/MensClothing/16.jpg', 0, 0, '2025-01-01 00:00:00'),
-(41, 1, '17', '17', '', 2348.68, 'Products/MensClothing/17.jpg', 0, 0, '2025-01-01 00:00:00'),
-(42, 1, '18', '18', '', 2278.83, 'Products/MensClothing/18.jpg', 0, 0, '2025-01-01 00:00:00'),
-(43, 1, '19', '19', '', 1733.45, 'Products/MensClothing/19.jpg', 0, 0, '2025-01-01 00:00:00'),
-(44, 1, 'Boldessential', 'boldessential', '', 2503.25, 'Products/MensClothing/boldessential.jpg', 0, 0, '2025-01-01 00:00:00'),
-(45, 1, 'Chickavenue', 'chickavenue', '', 1620.53, 'Products/MensClothing/chickavenue.jpg', 0, 0, '2025-01-01 00:00:00'),
-(46, 1, 'Classicedge', 'classicedge', '', 2369.74, 'Products/MensClothing/classicedge.jpg', 0, 0, '2025-01-01 00:00:00'),
-(47, 1, 'Dualfashion', 'dualfashion', '', 1085.92, 'Products/MensClothing/dualfashion.jpg', 0, 0, '2025-01-01 00:00:00'),
-(48, 1, 'Elitewear', 'elitewear', '', 1205.66, 'Products/MensClothing/elitewear.jpg', 0, 0, '2025-01-01 00:00:00'),
-(49, 1, 'Eternalprestige', 'eternalprestige', '', 2886.15, 'Products/MensClothing/eternalprestige.jpg', 0, 0, '2025-01-01 00:00:00'),
-(50, 1, 'Gentlines', 'gentlines', '', 1425.60, 'Products/MensClothing/gentlines.jpg', 0, 0, '2025-01-01 00:00:00'),
-(51, 1, 'Luxelegacy', 'luxelegacy', '', 1778.14, 'Products/MensClothing/luxelegacy.jpg', 0, 0, '2025-01-01 00:00:00'),
-(52, 1, 'Modernmasculine', 'modernmasculine', '', 1867.44, 'Products/MensClothing/modernmasculine.jpg', 0, 0, '2025-01-01 00:00:00'),
-(53, 1, 'Modishmovement', 'modishmovement', '', 1048.21, 'Products/MensClothing/modishmovement.jpg', 0, 0, '2025-01-01 00:00:00'),
-(54, 1, 'Nobbleattire', 'nobbleattire', '', 2570.37, 'Products/MensClothing/nobbleattire.jpg', 0, 0, '2025-01-01 00:00:00'),
-(55, 1, 'Primevibe', 'primevibe', '', 1783.91, 'Products/MensClothing/primevibe.jpg', 0, 0, '2025-01-01 00:00:00'),
-(56, 1, 'Refinedrebel', 'refinedrebel', '', 1324.60, 'Products/MensClothing/refinedrebel.jpg', 0, 0, '2025-01-01 00:00:00'),
-(57, 1, 'Sartorialessence', 'sartorialessence', '', 2606.43, 'Products/MensClothing/sartorialessence.jpg', 0, 0, '2025-01-01 00:00:00'),
-(58, 1, 'Sharpanddapper', 'sharpanddapper', '', 1276.50, 'Products/MensClothing/sharpanddapper.jpg', 0, 0, '2025-01-01 00:00:00'),
-(59, 1, 'Streetsovereign', 'streetsovereign', '', 2850.83, 'Products/MensClothing/streetsovereign.jpg', 0, 0, '2025-01-01 00:00:00'),
-(60, 1, 'Timelesstrend', 'timelesstrend', '', 1421.45, 'Products/MensClothing/timelesstrend.jpg', 0, 0, '2025-01-01 00:00:00'),
-(61, 1, 'Urbannomad', 'urbannomad', '', 1618.19, 'Products/MensClothing/urbannomad.jpg', 0, 0, '2025-01-01 00:00:00'),
-(62, 1, 'Urbanthread', 'urbanthread', '', 1360.28, 'Products/MensClothing/urbanthread.jpg', 0, 0, '2025-01-01 00:00:00'),
-(63, 1, 'Vanguardthreads', 'vanguardthreads', '', 2777.16, 'Products/MensClothing/vanguardthreads.jpg', 0, 0, '2025-01-01 00:00:00'),
-(64, 1, 'H&A', 'h-a', '', 2869.92, 'Products/Products/H&A.jpg', 0, 0, '2025-01-01 00:00:00'),
-(65, 1, 'Menspants', 'menspants', '', 1978.16, 'Products/Products/Menspants.png', 0, 0, '2025-01-01 00:00:00'),
-(66, 1, 'Nasa', 'nasa', '', 1620.05, 'Products/Products/Nasa.jpg', 0, 0, '2025-01-01 00:00:00'),
-(67, 1, 'Antler', 'antler', '', 2296.17, 'Products/Products/antler.jpg', 0, 0, '2025-01-01 00:00:00'),
-(68, 1, 'Balboashort', 'balboashort', '', 1724.47, 'Products/Products/balboashort.png', 0, 0, '2025-01-01 00:00:00'),
-(69, 1, 'Black', 'black', '', 2262.25, 'Products/Products/black.png', 0, 0, '2025-01-01 00:00:00'),
-(70, 1, 'Bravehoodie', 'bravehoodie', '', 1054.92, 'Products/Products/bravehoodie.jpg', 0, 0, '2025-01-01 00:00:00'),
-(71, 1, 'Cargo', 'cargo', '', 2339.87, 'Products/Products/cargo.png', 0, 0, '2025-01-01 00:00:00'),
-(72, 1, 'Cartoon', 'cartoon', '', 1243.49, 'Products/Products/cartoon.jpg', 0, 0, '2025-01-01 00:00:00'),
-(73, 1, 'Colorblock', 'colorblock', '', 1393.39, 'Products/Products/colorblock.jpg', 0, 0, '2025-01-01 00:00:00'),
-(74, 1, 'Edenshort', 'edenshort', '', 1532.35, 'Products/Products/edenshort.jpg', 0, 0, '2025-01-01 00:00:00'),
-(75, 1, 'Edenshort', 'edenshort-2', '', 2825.45, 'Products/Products/edenshort.png', 0, 0, '2025-01-01 00:00:00'),
-(76, 1, 'Focushoodie', 'focushoodie', '', 1030.46, 'Products/Products/focushoodie.jpg', 0, 0, '2025-01-01 00:00:00'),
-(77, 1, 'Gandolfini', 'gandolfini', '', 2410.55, 'Products/Products/gandolfini.jpg', 0, 0, '2025-01-01 00:00:00'),
-(78, 1, 'Graphichoodie', 'graphichoodie', '', 2502.79, 'Products/Products/graphichoodie.jpg', 0, 0, '2025-01-01 00:00:00'),
-(79, 1, 'Gray', 'gray', '', 2681.64, 'Products/Products/gray.png', 0, 0, '2025-01-01 00:00:00'),
-(80, 1, 'Handprint', 'handprint', '', 2428.43, 'Products/Products/handprint.jpg', 0, 0, '2025-01-01 00:00:00'),
-(81, 1, 'Hiphophoodie', 'hiphophoodie', '', 2566.10, 'Products/Products/hiphophoodie.jpg', 0, 0, '2025-01-01 00:00:00'),
-(82, 1, 'Hoodie', 'hoodie', '', 2400.77, 'Products/Products/hoodie.jpg', 0, 0, '2025-01-01 00:00:00'),
-(83, 1, 'Kangaroopocket', 'kangaroopocket', '', 2477.33, 'Products/Products/kangaroopocket.jpg', 0, 0, '2025-01-01 00:00:00'),
-(84, 1, 'Longsleeve', 'longsleeve', '', 1873.45, 'Products/Products/longsleeve.png', 0, 0, '2025-01-01 00:00:00'),
-(85, 1, 'Orcajump', 'orcajump', '', 2830.64, 'Products/Products/orcajump.jpg', 0, 0, '2025-01-01 00:00:00'),
-(86, 1, 'Red', 'red', '', 1609.39, 'Products/Products/red.png', 0, 0, '2025-01-01 00:00:00'),
-(87, 1, 'Redblack', 'redblack', '', 2982.32, 'Products/Products/redblack.jpg', 0, 0, '2025-01-01 00:00:00'),
-(88, 1, 'Toddlerboys', 'toddlerboys', '', 2034.82, 'Products/Products/toddlerboys.jpg', 0, 0, '2025-01-01 00:00:00'),
-(89, 1, 'Tokyo', 'tokyo', '', 1067.23, 'Products/Products/tokyo.jpg', 0, 0, '2025-01-01 00:00:00'),
-(90, 1, 'Winterspring', 'winterspring', '', 1307.91, 'Products/Products/winterspring.jpg', 0, 0, '2025-01-01 00:00:00'),
-(91, 4, 'Nbjamiefoy', 'nbjamiefoy', '', 1190.55, 'Products/Shoes/NBjamiefoy.jpg', 0, 0, '2025-01-01 00:00:00'),
-(92, 4, 'Barklaycanvas', 'barklaycanvas', '', 2535.91, 'Products/Shoes/barklaycanvas.jpg', 0, 0, '2025-01-01 00:00:00'),
-(93, 4, 'Casualboots', 'casualboots', '', 1811.82, 'Products/Shoes/casualboots.jpg', 0, 0, '2025-01-01 00:00:00'),
-(94, 4, 'Gerryellisfashion', 'gerryellisfashion', '', 2020.97, 'Products/Shoes/gerryellisfashion.jpg', 0, 0, '2025-01-01 00:00:00'),
-(95, 4, 'Horsebuckle', 'horsebuckle', '', 2758.46, 'Products/Shoes/horsebuckle.jpg', 0, 0, '2025-01-01 00:00:00'),
-(96, 4, 'Koreanwarm', 'koreanwarm', '', 1969.77, 'Products/Shoes/koreanwarm.jpg', 0, 0, '2025-01-01 00:00:00'),
-(97, 4, 'Ladies Ankle Boot With Croc Detail Boots You Know Whos 814602', 'ladies-ankle-boot-with-croc-detail-boots-you-know-whos-814602', '', 1620.46, 'Products/Shoes/ladies-ankle-boot-with-croc-detail-boots-you-know-whos-814602.webp', 0, 0, '2025-01-01 00:00:00'),
-(98, 4, 'Ladies Chelsea Flatform Ankle Boots Shoes You Know Whos 920871', 'ladies-chelsea-flatform-ankle-boots-shoes-you-know-whos-920871', '', 2475.90, 'Products/Shoes/ladies-chelsea-flatform-ankle-boots-shoes-you-know-whos-920871.webp', 0, 0, '2025-01-01 00:00:00'),
-(99, 4, 'Ladies Comfort Boot Boots You Know Whos 411386', 'ladies-comfort-boot-boots-you-know-whos-411386', '', 2398.32, 'Products/Shoes/ladies-comfort-boot-boots-you-know-whos-411386.webp', 0, 0, '2025-01-01 00:00:00'),
-(100, 4, 'Ladies Faux Fur Trim Mule Boots You Know Whos 174199', 'ladies-faux-fur-trim-mule-boots-you-know-whos-174199', '', 1077.78, 'Products/Shoes/ladies-faux-fur-trim-mule-boots-you-know-whos-174199.webp', 0, 0, '2025-01-01 00:00:00'),
-(101, 4, 'Ladies Fur Trim Hiker Boot Shoes You Know Whos 603117', 'ladies-fur-trim-hiker-boot-shoes-you-know-whos-603117', '', 2268.17, 'Products/Shoes/ladies-fur-trim-hiker-boot-shoes-you-know-whos-603117.webp', 0, 0, '2025-01-01 00:00:00'),
-(102, 4, 'Ladies Mink Faux Fur Turnover Ankle Boot Shoes You Know Whos 386266', 'ladies-mink-faux-fur-turnover-ankle-boot-shoes-you-know-whos-386266', '', 1706.59, 'Products/Shoes/ladies-mink-faux-fur-turnover-ankle-boot-shoes-you-know-whos-386266.webp', 0, 0, '2025-01-01 00:00:00'),
-(103, 4, 'Ladies Western Black Boot Shoes You Know Whos 480072', 'ladies-western-black-boot-shoes-you-know-whos-480072', '', 2447.01, 'Products/Shoes/ladies-western-black-boot-shoes-you-know-whos-480072.webp', 0, 0, '2025-01-01 00:00:00'),
-(104, 4, 'Mens Grey Fur Lined Mule Slipper You Know Whos 722600', 'mens-grey-fur-lined-mule-slipper-you-know-whos-722600', '', 1111.00, 'Products/Shoes/mens-grey-fur-lined-mule-slipper-you-know-whos-722600.webp', 0, 0, '2025-01-01 00:00:00'),
-(105, 4, 'Mensversatile', 'mensversatile', '', 1252.64, 'Products/Shoes/mensversatile.jpg', 0, 0, '2025-01-01 00:00:00'),
-(106, 4, 'Meshlightweight', 'meshlightweight', '', 1523.12, 'Products/Shoes/meshlightweight.jpg', 0, 0, '2025-01-01 00:00:00'),
-(107, 4, 'Oxfordshoes', 'oxfordshoes', '', 2593.36, 'Products/Shoes/oxfordshoes.jpg', 0, 0, '2025-01-01 00:00:00'),
-(108, 4, 'Runningshoes', 'runningshoes', '', 2124.99, 'Products/Shoes/runningshoes.jpg', 0, 0, '2025-01-01 00:00:00'),
-(109, 4, 'Skateshoes', 'skateshoes', '', 2098.60, 'Products/Shoes/skateshoes.jpg', 0, 0, '2025-01-01 00:00:00'),
-(110, 4, 'Softsoledshoes', 'softsoledshoes', '', 2592.44, 'Products/Shoes/softsoledshoes.jpg', 0, 0, '2025-01-01 00:00:00'),
-(111, 4, 'Thicksoleshoes', 'thicksoleshoes', '', 2984.30, 'Products/Shoes/thicksoleshoes.jpg', 0, 0, '2025-01-01 00:00:00'),
-(112, 4, 'Tokyo Laundry Mens Corduroy Slippers You Know Whos 931291', 'tokyo-laundry-mens-corduroy-slippers-you-know-whos-931291', '', 2706.14, 'Products/Shoes/tokyo-laundry-mens-corduroy-slippers-you-know-whos-931291.webp', 0, 0, '2025-01-01 00:00:00'),
-(113, 4, 'Tokyo Laundry Mens Faux Suede Slippers You Know Whos 173523', 'tokyo-laundry-mens-faux-suede-slippers-you-know-whos-173523', '', 2786.52, 'Products/Shoes/tokyo-laundry-mens-faux-suede-slippers-you-know-whos-173523.webp', 0, 0, '2025-01-01 00:00:00'),
-(114, 4, 'Upland', 'upland', '', 1465.53, 'Products/Shoes/upland.webp', 0, 0, '2025-01-01 00:00:00'),
-(115, 4, 'Vans', 'vans', '', 1528.98, 'Products/Shoes/vans.webp', 0, 0, '2025-01-01 00:00:00'),
-(116, 2, 'Buttondenim', 'buttondenim', '', 2012.33, 'Products/WomensBottom/buttondenim.jpg', 0, 0, '2025-01-01 00:00:00'),
-(117, 2, 'Distressedbootcut', 'distressedbootcut', '', 1795.97, 'Products/WomensBottom/distressedbootcut.jpg', 0, 0, '2025-01-01 00:00:00'),
-(118, 2, 'Flarejeans', 'flarejeans', '', 1079.44, 'Products/WomensBottom/flarejeans.jpg', 0, 0, '2025-01-01 00:00:00'),
-(119, 2, 'Heavyweightsweatpants', 'heavyweightsweatpants', '', 1607.54, 'Products/WomensBottom/heavyweightsweatpants.jpg', 0, 0, '2025-01-01 00:00:00'),
-(120, 2, 'Highwaistdenimshort', 'highwaistdenimshort', '', 1252.16, 'Products/WomensBottom/highwaistdenimshort.jpg', 0, 0, '2025-01-01 00:00:00'),
-(121, 2, 'Ladies Bengaline Trousers You Know Whos 163186', 'ladies-bengaline-trousers-you-know-whos-163186', '', 2924.00, 'Products/WomensBottom/ladies-bengaline-trousers-you-know-whos-163186.webp', 0, 0, '2025-01-01 00:00:00'),
-(122, 2, 'Ladies Black Cycling Shorts You Know Whos 772039', 'ladies-black-cycling-shorts-you-know-whos-772039', '', 2088.97, 'Products/WomensBottom/ladies-black-cycling-shorts-you-know-whos-772039.webp', 0, 0, '2025-01-01 00:00:00'),
-(123, 2, 'Ladies Brushed Marl Joggers Joggers For Women You Know Whos 896253', 'ladies-brushed-marl-joggers-joggers-for-women-you-know-whos-896253', '', 2889.89, 'Products/WomensBottom/ladies-brushed-marl-joggers-joggers-for-women-you-know-whos-896253.webp', 0, 0, '2025-01-01 00:00:00'),
-(124, 2, 'Ladies Dogtooth Trouser You Know Whos 374234', 'ladies-dogtooth-trouser-you-know-whos-374234', '', 1938.94, 'Products/WomensBottom/ladies-dogtooth-trouser-you-know-whos-374234.webp', 0, 0, '2025-01-01 00:00:00'),
-(125, 2, 'Ladies Ex Store Jegging Jeans You Know Whos 408930', 'ladies-ex-store-jegging-jeans-you-know-whos-408930', '', 1219.17, 'Products/WomensBottom/ladies-ex-store-jegging-jeans-you-know-whos-408930.webp', 0, 0, '2025-01-01 00:00:00'),
-(126, 2, 'Ladies Fleece Loungewear Pants Loungewear You Know Whos 136822', 'ladies-fleece-loungewear-pants-loungewear-you-know-whos-136822', '', 2640.72, 'Products/WomensBottom/ladies-fleece-loungewear-pants-loungewear-you-know-whos-136822.webp', 0, 0, '2025-01-01 00:00:00'),
-(127, 2, 'Ladies High Waisted Jeggings You Know Whos 279133', 'ladies-high-waisted-jeggings-you-know-whos-279133', '', 2005.18, 'Products/WomensBottom/ladies-high-waisted-jeggings-you-know-whos-279133.webp', 0, 0, '2025-01-01 00:00:00'),
-(128, 2, 'Ladies Ponte Cargo Jogger Joggers You Know Whos 987253', 'ladies-ponte-cargo-jogger-joggers-you-know-whos-987253', '', 1277.82, 'Products/WomensBottom/ladies-ponte-cargo-jogger-joggers-you-know-whos-987253.webp', 0, 0, '2025-01-01 00:00:00'),
-(129, 2, 'Ladies Soft Touch Leggings You Know Whos 485255', 'ladies-soft-touch-leggings-you-know-whos-485255', '', 2077.58, 'Products/WomensBottom/ladies-soft-touch-leggings-you-know-whos-485255.webp', 0, 0, '2025-01-01 00:00:00'),
-(130, 2, 'Ladies Soft Touch Leggings You Know Whos 569146', 'ladies-soft-touch-leggings-you-know-whos-569146', '', 2922.76, 'Products/WomensBottom/ladies-soft-touch-leggings-you-know-whos-569146.webp', 0, 0, '2025-01-01 00:00:00'),
-(131, 2, 'Ladies Super Soft Leggings Leggings For Women You Know Whos 274739', 'ladies-super-soft-leggings-leggings-for-women-you-know-whos-274739', '', 1849.25, 'Products/WomensBottom/ladies-super-soft-leggings-leggings-for-women-you-know-whos-274739.webp', 0, 0, '2025-01-01 00:00:00'),
-(132, 2, 'Ladies Super Soft Shorts You Know Whos 980867', 'ladies-super-soft-shorts-you-know-whos-980867', '', 2642.63, 'Products/WomensBottom/ladies-super-soft-shorts-you-know-whos-980867.webp', 0, 0, '2025-01-01 00:00:00'),
-(133, 2, 'Pantswrap', 'pantswrap', '', 2901.91, 'Products/WomensBottom/pantswrap.jpg', 0, 0, '2025-01-01 00:00:00'),
-(134, 2, 'Siggydenim', 'siggydenim', '', 1539.70, 'Products/WomensBottom/siggydenim.jpg', 0, 0, '2025-01-01 00:00:00'),
-(135, 2, 'Straighthighwaist', 'straighthighwaist', '', 2544.71, 'Products/WomensBottom/straighthighwaist.jpg', 0, 0, '2025-01-01 00:00:00'),
-(136, 2, 'Straptop', 'straptop', '', 1391.23, 'Products/WomensBottom/straptop.jpg', 0, 0, '2025-01-01 00:00:00'),
-(137, 2, 'Tiedhighwaist', 'tiedhighwaist', '', 1824.82, 'Products/WomensBottom/tiedhighwaist.jpg', 0, 0, '2025-01-01 00:00:00'),
-(138, 2, 'Womenstrouser', 'womenstrouser', '', 2474.73, 'Products/WomensBottom/womenstrouser.jpg', 0, 0, '2025-01-01 00:00:00'),
-(139, 2, '1', '1', '', 1078.72, 'Products/WomensClothing/1.webp', 1, 0, '2025-01-01 00:00:00'),
-(140, 2, '2', '2-3', '', 1689.22, 'Products/WomensClothing/2.webp', 0, 0, '2025-01-01 00:00:00'),
-(141, 2, 'Tweecotton', 'tweecotton', '', 2044.19, 'Products/WomensClothing/TWEEcotton.jpg', 0, 0, '2025-01-01 00:00:00'),
-(142, 2, 'Benitoromance', 'benitoromance', '', 2795.78, 'Products/WomensClothing/benitoromance.jpg', 0, 0, '2025-01-01 00:00:00'),
-(143, 2, 'Casualfrench', 'casualfrench', '', 1685.46, 'Products/WomensClothing/casualfrench.jpg', 0, 0, '2025-01-01 00:00:00'),
-(144, 2, 'Chiffonblouse', 'chiffonblouse', '', 2561.01, 'Products/WomensClothing/chiffonblouse.jpg', 0, 0, '2025-01-01 00:00:00'),
-(145, 2, 'Diangledjeans', 'diangledjeans', '', 1130.99, 'Products/WomensClothing/diangledjeans.jpg', 0, 0, '2025-01-01 00:00:00'),
-(146, 2, 'Formalblack', 'formalblack', '', 2369.87, 'Products/WomensClothing/formalblack.jpg', 0, 0, '2025-01-01 00:00:00'),
-(147, 2, 'Ladies Animal Curved Hem Top Ladies Top You Know Whos 874282', 'ladies-animal-curved-hem-top-ladies-top-you-know-whos-874282', '', 2420.44, 'Products/WomensClothing/ladies-animal-curved-hem-top-ladies-top-you-know-whos-874282.webp', 0, 0, '2025-01-01 00:00:00'),
-(148, 2, 'Ladies Cowl Neck Scoop Top Ladies Top You Know Whos 832575', 'ladies-cowl-neck-scoop-top-ladies-top-you-know-whos-832575', '', 1036.54, 'Products/WomensClothing/ladies-cowl-neck-scoop-top-ladies-top-you-know-whos-832575.webp', 0, 0, '2025-01-01 00:00:00'),
-(149, 2, 'Ladies Floral Blouse You Know Whos 914651', 'ladies-floral-blouse-you-know-whos-914651', '', 1771.97, 'Products/WomensClothing/ladies-floral-blouse-you-know-whos-914651.webp', 0, 0, '2025-01-01 00:00:00'),
-(150, 2, 'Ladies Mint Crew Neck T Shirt You Know Whos 500287', 'ladies-mint-crew-neck-t-shirt-you-know-whos-500287', '', 2115.78, 'Products/WomensClothing/ladies-mint-crew-neck-t-shirt-you-know-whos-500287.webp', 0, 0, '2025-01-01 00:00:00'),
-(151, 2, 'Ladies Oatmeal Leopard Smudge Curved Hem Top Ladies Top You Know Whos 833547', 'ladies-oatmeal-leopard-smudge-curved-hem-top-ladies-top-you-know-whos-833547', '', 1302.44, 'Products/WomensClothing/ladies-oatmeal-leopard-smudge-curved-hem-top-ladies-top-you-know-whos-833547.webp', 0, 0, '2025-01-01 00:00:00'),
-(152, 2, 'Ladies Turn Back Cuff Top You Know Whos 473978', 'ladies-turn-back-cuff-top-you-know-whos-473978', '', 1244.97, 'Products/WomensClothing/ladies-turn-back-cuff-top-you-know-whos-473978.webp', 0, 0, '2025-01-01 00:00:00'),
-(153, 2, 'Ladies V Neck Printed Top You Know Whos 316876', 'ladies-v-neck-printed-top-you-know-whos-316876', '', 1046.00, 'Products/WomensClothing/ladies-v-neck-printed-top-you-know-whos-316876.webp', 0, 0, '2025-01-01 00:00:00'),
-(154, 2, 'Lapelblazer', 'lapelblazer', '', 2825.54, 'Products/WomensClothing/lapelblazer.jpg', 0, 0, '2025-01-01 00:00:00'),
-(155, 2, 'Mid Length Knitted Jumper Dress Dress You Know Whos 902420', 'mid-length-knitted-jumper-dress-dress-you-know-whos-902420', '', 1278.51, 'Products/WomensClothing/mid-length-knitted-jumper-dress-dress-you-know-whos-902420.webp', 0, 0, '2025-01-01 00:00:00'),
-(156, 2, 'Officerobe', 'officerobe', '', 1292.08, 'Products/WomensClothing/officerobe.jpg', 0, 0, '2025-01-01 00:00:00'),
-(157, 2, 'Oldmoney', 'oldmoney', '', 2190.61, 'Products/WomensClothing/oldmoney.jpg', 0, 0, '2025-01-01 00:00:00'),
-(158, 2, 'Patchedpocket', 'patchedpocket', '', 1532.77, 'Products/WomensClothing/patchedpocket.jpg', 0, 0, '2025-01-01 00:00:00'),
-(159, 2, 'Peplumround', 'peplumround', '', 1076.48, 'Products/WomensClothing/peplumround.jpg', 0, 0, '2025-01-01 00:00:00'),
-(160, 2, 'Pushupleggins', 'pushupleggins', '', 1910.40, 'Products/WomensClothing/pushupleggins.jpg', 0, 0, '2025-01-01 00:00:00'),
-(161, 2, 'Satinblouse', 'satinblouse', '', 1395.64, 'Products/WomensClothing/satinblouse.jpg', 0, 0, '2025-01-01 00:00:00'),
-(162, 2, 'Shawlcollar', 'shawlcollar', '', 2870.44, 'Products/WomensClothing/shawlcollar.jpg', 0, 0, '2025-01-01 00:00:00'),
-(163, 2, 'Solidbutton', 'solidbutton', '', 2902.19, 'Products/WomensClothing/solidbutton.jpg', 0, 0, '2025-01-01 00:00:00'),
-(164, 2, 'Threadbare Ladies V Neck Midi Dress Dress You Know Whos 103538', 'threadbare-ladies-v-neck-midi-dress-dress-you-know-whos-103538', '', 1478.30, 'Products/WomensClothing/threadbare-ladies-v-neck-midi-dress-dress-you-know-whos-103538.webp', 0, 0, '2025-01-01 00:00:00'),
-(165, 2, 'Waistcoat', 'waistcoat', '', 2071.04, 'Products/WomensClothing/waistcoat.jpg', 0, 0, '2025-01-01 00:00:00'),
-(166, 2, 'Womenslongsleeve', 'womenslongsleeve', '', 1242.18, 'Products/WomensClothing/womenslongsleeve.jpg', 0, 0, '2025-01-01 00:00:00'),
-(172, 1, 'Black', 'black-2', '', 2976.02, 'Products/black.png', 0, 0, '2025-01-01 00:00:00'),
-(173, 1, 'Bryan', 'bryan', '', 2890.15, 'Products/bryan.jpg', 0, 0, '2025-01-01 00:00:00'),
-(174, 1, 'Cargo', 'cargo-2', '', 1080.87, 'Products/cargo.png', 0, 0, '2025-01-01 00:00:00'),
-(175, 1, 'Clark', 'clark', '', 2377.24, 'Products/clark.png', 0, 0, '2025-01-01 00:00:00'),
-(176, 1, 'Clothes 2', 'clothes-2', '', 2330.05, 'Products/clothes-2.jpg', 0, 0, '2025-01-01 00:00:00'),
-(177, 1, 'Clothes 3', 'clothes-3', '', 2845.83, 'Products/clothes-3.jpg', 0, 0, '2025-01-01 00:00:00'),
-(180, 1, 'Gray', 'gray-2', '', 2862.99, 'Products/gray.png', 0, 0, '2025-01-01 00:00:00'),
-(182, 1, 'Kurt', 'kurt', '', 2419.37, 'Products/kurt.jpg', 0, 0, '2025-01-01 00:00:00'),
-(185, 1, 'Red', 'red-2', '', 1571.90, 'Products/red.png', 0, 0, '2025-01-01 00:00:00');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `site_pages`
---
 
 CREATE TABLE `site_pages` (
   `id` int(11) NOT NULL,
@@ -376,11 +144,7 @@ CREATE TABLE `site_pages` (
   `hero_image` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
 
---
--- Table structure for table `site_sections`
---
 
 CREATE TABLE `site_sections` (
   `id` int(11) NOT NULL,
@@ -393,11 +157,7 @@ CREATE TABLE `site_sections` (
   `button_link` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
 
---
--- Table structure for table `site_settings`
---
 
 CREATE TABLE `site_settings` (
   `id` int(11) NOT NULL,

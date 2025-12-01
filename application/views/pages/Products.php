@@ -6,72 +6,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products - DeComponents</title>
     <link rel="stylesheet" href="<?php echo base_url('design.css'); ?>">
+    <script>
+        window.PRODUCT_DATA = <?php echo json_encode(isset($products) ? $products : []); ?>;
+    </script>
 </head>
 
 <body>
-    <header class="decom-header">
-        <div class="decom-container">
-            <img src="<?php echo base_url('Pictures/DeComponents.jpeg'); ?>" alt="DeComponents Logo" class="decom-logo">
-            <nav class="decom-nav">
-                <div class="decom-container">
-                    <a href="<?php echo site_url("home"); ?>" class="decom-nav-link">HOME</a>
-                    <a href="<?php echo site_url("products"); ?>" class="decom-nav-link">PRODUCTS</a>
-                    <a href="<?php echo site_url("about"); ?>" class="decom-nav-link">ABOUT US</a>
-                    <a href="<?php echo site_url("tradables"); ?>" class="decom-nav-link">TRADABLES</a>
-                    <a href="<?php echo site_url("news"); ?>" class="decom-nav-link">NEWS</a>
-                    <a href="<?php echo site_url("contact"); ?>" class="decom-nav-link">CONTACT</a>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <?php $this->load->view('partials/navbar'); ?>
 
     <main class="decom-main">
-        <div class="decom-category-grid">
-            <div class="decom-category">
+        <div class="decom-category-grid decom-category-grid--compact">
+            <div class="decom-category" data-category="GPU" role="button" tabindex="0">
                 <img src="<?php echo base_url('Pictures/Graphics.webp'); ?>" alt="Graphics Card" class="decom-category-image">
                 <h3 class="decom-category-title">Graphics Card</h3>
             </div>
-            <div class="decom-category">
+            <div class="decom-category" data-category="CPU" role="button" tabindex="0">
                 <img src="<?php echo base_url('Pictures/often.webp'); ?>" alt="CPU" class="decom-category-image">
-                <h1 class="decom-category-title">CPU</h1>
+                <h3 class="decom-category-title">CPU</h3>
             </div>
-            <div class="decom-category">
+            <div class="decom-category" data-category="Power Supply" role="button" tabindex="0">
                 <img src="<?php echo base_url('Pictures/powsu.webp'); ?>" alt="Power Supply" class="decom-category-image">
                 <h3 class="decom-category-title">Power Supply</h3>
             </div>
-            <div class="decom-category">
-                <img src="<?php echo base_url('Pictures/moboth.webp'); ?>" alt="Mother Board" class="decom-category-image">
-                <h3 class="decom-category-title">Mother Board</h3>
-                <div>
+            <div class="decom-category" data-category="Motherboard" role="button" tabindex="0">
+                <img src="<?php echo base_url('Pictures/moboth.webp'); ?>" alt="Motherboard" class="decom-category-image">
+                <h3 class="decom-category-title">Motherboard</h3>
+            </div>
+        </div>
 
+        <div class="container product-toolbar">
+            <div class="product-toolbar__left">
+                <div class="title">PRODUCT LIST</div>
+                <p class="product-subtitle">Filter by category and add components straight to your cart.</p>
+            </div>
+            <div class="product-toolbar__right">
+                <label class="filter-label" for="categoryFilter">Category
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="all">All categories</option>
+                    </select>
+                </label>
+                <div class="icon-cart" title="View cart">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 15a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 0h8m-8 0-1-4m9 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-9-4h10l2-7H3m2 7L3 4m0 0-.792-3H1" />
+                    </svg>
+                    <span>0</span>
                 </div>
             </div>
-            <div class="container">
-                <header>
-                    <div class="title">PRODUCT LIST</div>
-                    <div class="icon-cart">
-                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 15a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 0h8m-8 0-1-4m9 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-9-4h10l2-7H3m2 7L3 4m0 0-.792-3H1" />
-                        </svg>
-                        <span>0</span>
-                    </div>
-                </header>
-                <div class="listProduct">
+        </div>
 
-                </div>
+        <div class="container">
+            <div class="product-count" id="productCount">
+                Showing <?php echo isset($products) ? count($products) : 0; ?> items
             </div>
-            <div class="cartTab">
-                <h1>Shopping Cart</h1>
-                <div class="listCart">
-
-                </div>
-                <div class="btn">
-                    <button class="close">CLOSE</button>
-                    <button class="checkOut">Check Out</button>
-                </div>
+            <div class="listProduct">
+                <?php if (!empty($products)) : ?>
+                    <?php foreach ($products as $product) : ?>
+                        <div class="item product-card" data-id="<?php echo $product['id']; ?>">
+                            <div class="product-image-frame">
+                                <img src="<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                            </div>
+                            <div class="product-info">
+                                <p class="product-category"><?php echo htmlspecialchars($product['category']); ?></p>
+                                <h2><?php echo htmlspecialchars($product['name']); ?></h2>
+                                <p class="product-description"><?php echo htmlspecialchars($product['description']); ?></p>
+                            </div>
+                            <div class="product-footer">
+                                <div class="price">$<?php echo $product['price']; ?></div>
+                                <button class="addCart">Add To Cart</button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
+            <p class="decom-empty" style="<?php echo empty($products) ? '' : 'display:none;'; ?>">No products found in this category. Add images to the products/ folder to show them here.</p>
+        </div>
 
-            <script src="<?php echo base_url('app.js'); ?>"></script>
+        <div class="cartTab">
+            <h1>Shopping Cart</h1>
+            <div class="listCart"></div>
+            <div class="btn">
+                <button class="close">CLOSE</button>
+                <button class="checkOut">Check Out</button>
+            </div>
+        </div>
+
+        <script src="<?php echo base_url('app.js'); ?>"></script>
     </main>
 
     <footer class="decom-footer">
