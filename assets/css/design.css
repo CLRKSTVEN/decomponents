@@ -243,13 +243,41 @@ button:focus,
     overflow: hidden;
     box-shadow: var(--shadow);
     margin: 24px 0 40px;
-    background: var(--card);
+    background: linear-gradient(120deg, rgba(14,165,233,0.12), rgba(14,165,233,0.04));
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    align-items: center;
+    gap: 24px;
+    padding: 32px;
 }
 
 .decom-hero img {
     width: 100%;
     height: auto;
     display: block;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+}
+
+.decom-hero-content {
+    text-align: center;
+}
+
+.decom-hero-content h1 {
+    margin-bottom: 10px;
+    font-size: 32px;
+}
+
+.decom-hero-content p {
+    margin-bottom: 18px;
+    color: var(--muted);
+    font-size: 16px;
+}
+
+.decom-hero .decom-button {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 12px 18px;
 }
 
 /* Category and info tiles */
@@ -1162,7 +1190,7 @@ body.showCart {
     height: 26px;
     object-fit: contain;
     padding: 8px;
-    background: #ffffff;
+    background: #f8fafc;
     border: 1px solid var(--border);
     border-radius: 50%;
     box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);

@@ -17,6 +17,7 @@
     $heroCtaLabel = isset($siteSettings['hero_cta_label']) ? $siteSettings['hero_cta_label'] : 'Shop Now';
     $heroCtaLink  = isset($siteSettings['hero_cta_link']) ? $siteSettings['hero_cta_link'] : 'products';
     $featuredProducts = isset($featuredProducts) ? $featuredProducts : [];
+    $testimonials     = isset($testimonials) ? $testimonials : [];
     $resolveImage = function ($path) {
         if (!$path) {
             return base_url('Pictures/DeComponents.jpeg');
@@ -36,7 +37,7 @@
                     <p><?= html_escape($heroSubtitle); ?></p>
                     <a class="decom-button" href="<?= site_url($heroCtaLink); ?>"><?= html_escape($heroCtaLabel); ?></a>
                 </div>
-                <img src="<?php echo base_url('Pictures/intelcpu.jpg'); ?>" alt="Latest Intel Processors" class="decom-hero-image">
+                <img src="<?= base_url('Pictures/intelcpu.jpg'); ?>" alt="Latest Intel Processors" class="decom-hero-image">
             </div>
 
             <?php if (!empty($featuredProducts)): ?>
@@ -134,9 +135,7 @@
 
             <div class="decom-category-grid">
                 <div class="decom-category">
-                    <a href=" target=" _blank">
-                        <img src="<?php echo base_url('Pictures/Graphics.webp'); ?>" alt="Graphics Card" class="decom-category-image">
-                    </a>
+                    <img src="<?php echo base_url('Pictures/Graphics.webp'); ?>" alt="Graphics Card" class="decom-category-image">
                     <h3 class="decom-category-title">Graphics Card</h3>
                 </div>
                 <div class="decom-category">
