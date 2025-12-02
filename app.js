@@ -280,8 +280,8 @@ if (checkoutQtyProceedBtn) {
         });
 
         hideModal(checkoutQtyModal);
-        // Redirect to payment form
-        window.location.href = '/Decomponents/payment_form';
+        // Redirect to checkout review page
+        window.location.href = '/Decomponents/checkout_review';
     });
 }
 

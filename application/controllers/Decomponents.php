@@ -1517,6 +1517,40 @@ class Decomponents extends CI_Controller
         redirect('Decomponents');
     }
 
+    /**
+     * Checkout review page (requires login).
+     */
+    public function checkout_review()
+    {
+        $userId = $this->current_user_id();
+        if (!$userId) {
+            $nextUrl = site_url('Decomponents/checkout_review');
+            $loginUrl = site_url('home_page.php') . '?next=' . rawurlencode($nextUrl) . '&checkout=1';
+            return redirect($loginUrl);
+        }
+
+        $cart = $this->session->userdata('ez_cart') ?? [];
+        if (empty($cart)) {
+            $this->session->set_flashdata('error', 'Your cart is empty.');
+            return redirect('products');
+        }
+
+        $total = 0;
+        foreach ($cart as $item) {
+            $qty = (int)($item['qty'] ?? $item['quantity'] ?? 1);
+            $price = (float)($item['product_price'] ?? $item['price'] ?? 0);
+            $total += $qty * $price;
+        }
+
+        $data = [
+            'page_title' => 'Checkout Review',
+            'cart'       => $cart,
+            'total'      => $total,
+        ];
+
+        $this->load->view('decomponents/checkout_review', $data);
+    }
+
     // Profile view
     public function profile()
     {
