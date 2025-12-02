@@ -8,7 +8,7 @@
             <div class="slimscroll-menu">
 
                 <div class="p-4">
-                    <div class="alert alert-warning" role="alert">
+                    <div class="alert alert-warning" role="alert" aria-live="assertive" aria-atomic="true">
                         <strong>Customize </strong> the overall color scheme, layout, etc.
                     </div>
                     <div class="mb-2">

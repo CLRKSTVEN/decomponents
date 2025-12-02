@@ -18,12 +18,12 @@
     <main class="decom-main">
         <div class="decom-container" style="margin-top:16px;">
             <?php if ($this->session->flashdata('success')): ?>
-                <div class="alert alert-success" role="alert">
+                <div class="alert alert-success" role="alert" aria-live="assertive" aria-atomic="true">
                     <?= $this->session->flashdata('success'); ?>
                 </div>
             <?php endif; ?>
             <?php if ($this->session->flashdata('error')): ?>
-                <div class="alert alert-danger" role="alert">
+                <div class="alert alert-danger" role="alert" aria-live="assertive" aria-atomic="true">
                     <?= $this->session->flashdata('error'); ?>
                 </div>
             <?php endif; ?>

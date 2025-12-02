@@ -528,7 +528,7 @@
             </div>
 
             <?php if ($this->session->flashdata('error')): ?>
-                <div class="alert alert-danger" role="alert">
+                <div class="alert alert-danger" role="alert" aria-live="assertive" aria-atomic="true">
                     <span>⚠️</span>
                     <?= $this->session->flashdata('error'); ?>
                 </div>

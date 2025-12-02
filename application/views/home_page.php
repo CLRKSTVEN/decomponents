@@ -208,7 +208,7 @@ $subhead   = !empty($loginVisual['subheadline']) ? $loginVisual['subheadline'] :
 
               <!-- Flash messages -->
               <?php if ($this->session->flashdata('message')): ?>
-                <div class="alert alert-info alert-dismissible fade show mt-2" role="alert">
+                <div class="alert alert-info alert-dismissible fade show mt-2" role="alert" aria-live="assertive" aria-atomic="true">
                   <?= $this->session->flashdata('message'); ?>
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -217,7 +217,7 @@ $subhead   = !empty($loginVisual['subheadline']) ? $loginVisual['subheadline'] :
               <?php endif; ?>
 
               <?php if ($this->session->flashdata('success')): ?>
-                <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
+                <div class="alert alert-success alert-dismissible fade show mt-2" role="alert" aria-live="assertive" aria-atomic="true">
                   <?= $this->session->flashdata('success'); ?>
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -226,7 +226,7 @@ $subhead   = !empty($loginVisual['subheadline']) ? $loginVisual['subheadline'] :
               <?php endif; ?>
 
               <?php if ($this->session->flashdata('danger')): ?>
-                <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert" aria-live="assertive" aria-atomic="true">
                   <?= $this->session->flashdata('danger'); ?>
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -242,7 +242,7 @@ $subhead   = !empty($loginVisual['subheadline']) ? $loginVisual['subheadline'] :
               }
               ?>
               <?php if (!empty($checkoutNotice)) : ?>
-                <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert">
+                <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert" aria-live="assertive" aria-atomic="true">
                   <?= html_escape($checkoutNotice); ?>
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>

@@ -4,7 +4,20 @@ defined('BASEPATH') or exit('No direct script access allowed');
 // $config['base_url'] = 'https://college-my.wcmanila.edu.ph/';
 // $config['base_url'] = 'http://localhost/attendance-srms/';
 // $config['base_url'] = 'https://fbmso.softtechco.biz/';
-$config['base_url'] = 'http://localhost/decomponents/';
+// $config['base_url'] = 'http://localhost/decomponents/';
+
+$envBaseUrl = getenv('APP_BASE_URL');
+if (!empty($envBaseUrl)) {
+    $config['base_url'] = rtrim($envBaseUrl, '/') . '/';
+} else {
+    $isSecure = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
+        || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+    $scheme = $isSecure ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $path = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\');
+    $config['base_url'] = $scheme . '://' . $host . ($path ? $path . '/' : '/');
+}
+
 $config['enable_hooks'] = TRUE;
 $config['maintenance_mode'] = False;
 

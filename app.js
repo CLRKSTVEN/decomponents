@@ -299,6 +299,22 @@ const findProductById = (id) => {
     return products.find(p => String(p.id) === String(id));
 };
 
+const confirmAddToCart = async (productName) => {
+    if (window.Swal && typeof Swal.fire === 'function') {
+        const result = await Swal.fire({
+            title: 'Add this item to your cart?',
+            text: productName ? String(productName) : '',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Add to cart',
+            cancelButtonText: 'Cancel',
+            focusConfirm: false
+        });
+        return result.isConfirmed;
+    }
+    return true;
+};
+
 const syncCartItemToServer = (productId, quantity) => {
     if (!addToCartUrl) return;
 
@@ -401,9 +417,9 @@ if (listProductHTML) {
 }
 
 const addToCart = async (product_id) => {
-    // Confirm intent before proceeding
-    const confirmed = window.confirm('Add this item to your cart?');
-    if (!confirmed) return;
+    const productInfo = findProductById(product_id) || { name: 'this item' };
+    const allowAdd = await confirmAddToCart(productInfo.name);
+    if (!allowAdd) return;
 
     // Add to client cart first (works for guests too)
     const positionThisProductInCart = cart.findIndex((value) => value.product_id == product_id);
@@ -424,7 +440,6 @@ const addToCart = async (product_id) => {
     addCartToMemory();
 
     // Show add-to-cart confirmation modal
-    const productInfo = findProductById(product_id) || { name: 'Product' };
     if (addCartModalMsg) {
         addCartModalMsg.innerText = `${productInfo.name} added to your cart.`;
     }

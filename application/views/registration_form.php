@@ -217,7 +217,7 @@ $subhead   = !empty($signupVisual['subheadline']) ? $signupVisual['subheadline']
 
               <!-- Flash messages -->
               <?php if ($this->session->flashdata('message')): ?>
-                <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
+                <div class="alert alert-success alert-dismissible fade show mt-2" role="alert" aria-live="assertive" aria-atomic="true">
                   <?= htmlspecialchars($this->session->flashdata('message'), ENT_QUOTES, 'UTF-8'); ?>
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -226,7 +226,7 @@ $subhead   = !empty($signupVisual['subheadline']) ? $signupVisual['subheadline']
               <?php endif; ?>
 
               <?php if ($this->session->flashdata('msg')): ?>
-                <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert" aria-live="assertive" aria-atomic="true">
                   <?= htmlspecialchars($this->session->flashdata('msg'), ENT_QUOTES, 'UTF-8'); ?>
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -235,7 +235,7 @@ $subhead   = !empty($signupVisual['subheadline']) ? $signupVisual['subheadline']
               <?php endif; ?>
 
               <?php if (function_exists('validation_errors') && validation_errors()): ?>
-                <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert" aria-live="assertive" aria-atomic="true">
                   <?= validation_errors(); ?>
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -244,7 +244,7 @@ $subhead   = !empty($signupVisual['subheadline']) ? $signupVisual['subheadline']
               <?php endif; ?>
 
               <?php if (!empty($recaptcha_notice)): ?>
-                <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert">
+                <div class="alert alert-warning alert-dismissible fade show mt-2" role="alert" aria-live="assertive" aria-atomic="true">
                   <?= htmlspecialchars($recaptcha_notice, ENT_QUOTES, 'UTF-8'); ?>
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -367,7 +367,7 @@ $subhead   = !empty($signupVisual['subheadline']) ? $signupVisual['subheadline']
                     <div class="g-recaptcha" data-sitekey="<?= htmlspecialchars($recaptcha_site_key, ENT_QUOTES, 'UTF-8'); ?>"></div>
                   </div>
                 <?php else: ?>
-                  <div class="alert alert-warning mt-2 mb-2" role="alert">
+                  <div class="alert alert-warning mt-2 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
                     <strong>reCAPTCHA not configured.</strong> Add your site_key and sec_key in <code>o_srms_settings</code> (or <code>srms_settings</code>) to enable the captcha for signups.
                   </div>
                 <?php endif; ?>

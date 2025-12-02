@@ -461,14 +461,14 @@
             </div>
 
             <?php if ($this->session->flashdata('error')): ?>
-                <div class="alert alert-danger" role="alert">
+                <div class="alert alert-danger" role="alert" aria-live="assertive" aria-atomic="true">
                     <span>⚠️</span>
                     <?= $this->session->flashdata('error'); ?>
                 </div>
             <?php endif; ?>
 
             <?php if ($this->session->flashdata('success')): ?>
-                <div class="alert alert-success" role="alert">
+                <div class="alert alert-success" role="alert" aria-live="assertive" aria-atomic="true">
                     <span>✓</span>
                     <?= $this->session->flashdata('success'); ?>
                 </div>
@@ -508,7 +508,10 @@
                             </div>
 
                             <div class="cart-card-actions">
-                                <a class="cart-remove-btn" href="<?= site_url('Decomponents/remove_cart_item/' . $index); ?>" onclick="return confirm('Remove this item from your cart?');">
+                                <a
+                                    class="cart-remove-btn"
+                                    href="<?= site_url('Decomponents/remove_cart_item/' . $index); ?>"
+                                    data-name="<?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>">
                                     <span>🗑</span> Delete
                                 </a>
                             </div>
@@ -554,6 +557,38 @@
             })();
         </script>
     <?php endif; ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('click', function(evt) {
+            const link = evt.target.closest('.cart-remove-btn');
+            if (!link) return;
+
+            evt.preventDefault();
+            const href = link.getAttribute('href');
+            if (!href) return;
+
+            const itemName = link.getAttribute('data-name') || 'this item';
+
+            if (window.Swal && typeof Swal.fire === 'function') {
+                Swal.fire({
+                    title: 'Remove this item?',
+                    text: `${itemName} will be removed from your cart.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, remove',
+                    cancelButtonText: 'Cancel',
+                    focusCancel: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = href;
+                    }
+                });
+            } else if (window.confirm('Remove this item from your cart?')) {
+                window.location.href = href;
+            }
+        });
+    </script>
 
     <footer class="decom-footer">
         <nav class="decom-footer-nav">

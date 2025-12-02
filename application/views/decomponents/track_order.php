@@ -272,18 +272,18 @@
             </div>
 
             <?php if (!empty($cartCleared) && empty($showHistory)): ?>
-                <div class="alert alert-success">
+                <div class="alert alert-success" role="alert" aria-live="assertive" aria-atomic="true">
                     Cart cleared. Your cart is empty. Click “Order History” to view past orders.
                 </div>
             <?php endif; ?>
 
             <?php if ($this->session->flashdata('error')): ?>
-                <div class="alert alert-danger">
+                <div class="alert alert-danger" role="alert" aria-live="assertive" aria-atomic="true">
                     <?= $this->session->flashdata('error'); ?>
                 </div>
             <?php endif; ?>
             <?php if ($this->session->flashdata('success')): ?>
-                <div class="alert alert-success">
+                <div class="alert alert-success" role="alert" aria-live="assertive" aria-atomic="true">
                     <?= $this->session->flashdata('success'); ?>
                 </div>
             <?php endif; ?>

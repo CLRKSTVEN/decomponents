@@ -37,18 +37,18 @@
                             <div class="card">
                                 <div class="card-body">
                                     <?php if ($this->session->flashdata('success')): ?>
-                                        <div class="alert alert-success alert-dismissible fade show">
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="assertive" aria-atomic="true">
                                             <?= $this->session->flashdata('success'); ?>
                                             <button type="button" class="close" data-dismiss="alert">&times;</button>
                                         </div>
                                     <?php endif; ?>
                                     <?php if ($this->session->flashdata('danger')): ?>
-                                        <div class="alert alert-danger alert-dismissible fade show">
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="assertive" aria-atomic="true">
                                             <?= $this->session->flashdata('danger'); ?>
                                             <button type="button" class="close" data-dismiss="alert">&times;</button>
                                         </div>
                                     <?php endif; ?>
-                                    <?= validation_errors('<div class="alert alert-danger alert-dismissible fade show"><button type="button" class="close" data-dismiss="alert">&times;</button>', '</div>'); ?>
+                                    <?= validation_errors('<div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="assertive" aria-atomic="true"><button type="button" class="close" data-dismiss="alert">&times;</button>', '</div>'); ?>
 
                                     <div class="table-responsive">
                                         <table class="table table-hover mb-0">
