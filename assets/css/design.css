@@ -1308,6 +1308,7 @@ body.showCart {
     justify-content: center;
     gap: 12px;
     margin-bottom: 12px;
+    position: relative;
 }
 
 .decom-social-links img {
@@ -1315,10 +1316,51 @@ body.showCart {
     height: 26px;
     object-fit: contain;
     padding: 8px;
-    background: #f8fafc;
-    border: 1px solid var(--border);
+    background: #0f172a;
+    border: 1px solid rgba(15, 23, 42, 0.35);
     border-radius: 50%;
-    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.15);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.decom-social-links img:hover {
+    background: #1e293b;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.2);
+    transform: translateY(-1px);
+}
+
+.decom-social-links .decom-social-label {
+    display: none;
+}
+
+.decom-social-links a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.decom-social-links a::after {
+    content: attr(aria-label);
+    position: absolute;
+    bottom: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.decom-social-links a:hover::after,
+.decom-social-links a:focus::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-2px);
 }
 
 .decom-contact-email {

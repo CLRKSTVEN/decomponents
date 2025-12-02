@@ -96,11 +96,11 @@
             <a href="<?php echo site_url("contact"); ?>">CONTACT</a>
         </nav>
         <div class="decom-social-links">
-            <a href="https://www.youtube.com/@DeComponents" target="_blank"><img src="<?php echo base_url('Pictures/Yutob.webp'); ?>" alt="YouTube"></a>
-            <a href="https://www.facebook.com/profile.php?id=61568617385907" target="_blank"><img src="<?php echo base_url('Pictures/Fishbuk.webp'); ?>" alt="Facebook"></a>
-            <a href="https://www.tiktok.com/@decomponents" target="_blank"><img src="<?php echo base_url('Pictures/Tiktook.png'); ?>" alt="TikTok"></a>
-            <a href="https://www.linkedin.com/in/de-components-934ba3337/" target="_blank"><img src="<?php echo base_url('Pictures/linkedin.png'); ?>" alt="LinkedIn"></a>
-            <a href="#" target="_blank"><img src="<?php echo base_url('Pictures/Instagram.png'); ?>" alt="Instagram"></a>
+            <a href="https://www.youtube.com/@DeComponents" target="_blank" aria-label="YouTube"><img src="<?php echo base_url('Pictures/Yutob.webp'); ?>" alt="YouTube"></a>
+            <a href="https://www.facebook.com/profile.php?id=61568617385907" target="_blank" aria-label="Facebook"><img src="<?php echo base_url('Pictures/Fishbuk.webp'); ?>" alt="Facebook"></a>
+            <a href="https://www.tiktok.com/@decomponents" target="_blank" aria-label="TikTok"><img src="<?php echo base_url('Pictures/Tiktook.png'); ?>" alt="TikTok"></a>
+            <a href="https://www.linkedin.com/in/de-components-934ba3337/" target="_blank" aria-label="LinkedIn"><img src="<?php echo base_url('Pictures/linkedin.png'); ?>" alt="LinkedIn"></a>
+            <a href="#" target="_blank" aria-label="Instagram"><img src="<?php echo base_url('Pictures/Instagram.png'); ?>" alt="Instagram"></a>
         </div>
         <div class="decom-contact-email">
             <a href="mailto:decomponents.24@gmail.com">DeComponents.24@Gmail.com</a>
