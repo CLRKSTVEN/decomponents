@@ -1518,7 +1518,7 @@ class Decomponents extends CI_Controller
             'cartCount'  => $cartCount,
         ];
 
-        $this->load->view('decomponents/profile', $data);
+        $this->load->view('account_profile', $data);
     }
 
     // Profile update (avatar + address)
@@ -1532,6 +1532,27 @@ class Decomponents extends CI_Controller
 
         $address = trim($this->input->post('address', true));
         $update  = [];
+        $first   = trim($this->input->post('first_name', true));
+        $middle  = trim($this->input->post('middle_name', true));
+        $last    = trim($this->input->post('last_name', true));
+        $email   = trim($this->input->post('email', true));
+
+        if ($first !== '') {
+            $update['FirstName'] = $first;
+        }
+        if ($middle !== '') {
+            $update['MiddleName'] = $middle;
+        }
+        if ($last !== '') {
+            $update['LastName'] = $last;
+        }
+        if ($email !== '') {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $this->session->set_flashdata('error', 'Please provide a valid email address.');
+                return redirect('Decomponents/profile');
+            }
+            $update['email'] = $email;
+        }
 
         // Handle avatar upload
         if (!empty($_FILES['profile_picture']['name'])) {
@@ -1561,6 +1582,13 @@ class Decomponents extends CI_Controller
 
         if (!empty($update)) {
             $this->Decomponents_model->update_user($userId, $update);
+            // Refresh display name in session if we updated name/email
+            $sessionName = trim(($update['FirstName'] ?? $first ?? '') . ' ' . ($update['LastName'] ?? $last ?? ''));
+            if ($sessionName !== '') {
+                $this->session->set_userdata('ez_user_name', $sessionName);
+            } elseif (!empty($update['email'])) {
+                $this->session->set_userdata('ez_user_name', $update['email']);
+            }
         }
 
         $this->session->set_flashdata('success', 'Profile updated.');
@@ -1661,6 +1689,26 @@ class Decomponents extends CI_Controller
         ];
 
         $this->load->view('decomponents/cart', $data);
+    }
+
+    /**
+     * Remove a single cart item by index.
+     */
+    public function remove_cart_item($index = null)
+    {
+        $cart = $this->session->userdata('ez_cart') ?? [];
+        $idx  = is_numeric($index) ? (int)$index : -1;
+
+        if ($idx >= 0 && isset($cart[$idx])) {
+            unset($cart[$idx]);
+            $cart = array_values($cart); // reindex to keep order stable
+            $this->session->set_userdata('ez_cart', $cart);
+            $this->session->set_flashdata('success', 'Item removed from cart.');
+        } else {
+            $this->session->set_flashdata('error', 'Unable to remove that item.');
+        }
+
+        redirect('Decomponents/cart');
     }
 
     /**
@@ -1962,8 +2010,15 @@ class Decomponents extends CI_Controller
     }
     public function clear_cart()
     {
-        $this->session->set_userdata('ez_cart', []);
-        $this->session->set_flashdata('success', 'Cart cleared.');
-        redirect('Decomponents/shop');
+        $this->session->unset_userdata('ez_cart');
+        $this->session->set_flashdata('success', 'Cart cleared. You can view your order history in My Orders.');
+        $this->session->set_flashdata('cart_cleared', true);
+
+        $referer = $this->input->server('HTTP_REFERER');
+        $base    = rtrim(base_url(), '/');
+        if (!$referer || stripos($referer, $base) !== 0) {
+            $referer = site_url('Decomponents/track_order');
+        }
+        redirect($referer);
     }
 }

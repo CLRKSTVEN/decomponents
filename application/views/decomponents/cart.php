@@ -201,6 +201,32 @@
             color: var(--primary-color);
         }
 
+        .cart-card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-remove-btn {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cart-remove-btn:hover {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
         /* Cart Summary */
         .cart-summary {
             border-radius: 16px;
@@ -451,7 +477,7 @@
 
                 <!-- GRID OF CART ITEMS -->
                 <div class="cart-grid">
-                    <?php foreach ($cartItems as $item): ?>
+                    <?php foreach ($cartItems as $index => $item): ?>
                         <?php
                         $name  = isset($item['product_name']) ? $item['product_name'] : ($item['name'] ?? 'Product');
                         $price = (float)($item['product_price'] ?? $item['price'] ?? 0);
@@ -478,6 +504,12 @@
                             <div class="cart-card-subtotal">
                                 ₱<?= number_format($subtotal, 2); ?>
                             </div>
+
+                            <div class="cart-card-actions">
+                                <a class="cart-remove-btn" href="<?= site_url('Decomponents/remove_cart_item/' . $index); ?>" onclick="return confirm('Remove this item from your cart?');">
+                                    <span>🗑</span> Delete
+                                </a>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -487,6 +519,9 @@
                     <div class="cart-summary-actions">
                         <a class="decom-button decom-button--ghost" href="<?= site_url('products'); ?>">
                             ← Continue Shopping
+                        </a>
+                        <a class="decom-button decom-button--ghost" href="<?= site_url('Decomponents/track_order'); ?>">
+                            Order History
                         </a>
                     </div>
 
@@ -507,6 +542,16 @@
             <?php endif; ?>
         </div>
     </main>
+
+    <?php if ($this->session->flashdata('cart_cleared') || empty($cartItems)): ?>
+        <script>
+            (function() {
+                try {
+                    localStorage.removeItem('cart');
+                } catch (e) {}
+            })();
+        </script>
+    <?php endif; ?>
 
     <footer class="decom-footer">
         <nav class="decom-footer-nav">

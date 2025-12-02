@@ -23,39 +23,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="<?= base_url('assets/css/custom-sidebar-icons.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/masterlist-responsive.css'); ?>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Local Poppins font (regular/medium/semibold/bold) */
-        @font-face {
-            font-family: 'Poppins';
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url('<?= base_url('assets/fonts/poppins/Poppins-Regular.ttf'); ?>') format('truetype');
-        }
-        @font-face {
-            font-family: 'Poppins';
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url('<?= base_url('assets/fonts/poppins/Poppins-Medium.ttf'); ?>') format('truetype');
-        }
-        @font-face {
-            font-family: 'Poppins';
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url('<?= base_url('assets/fonts/poppins/Poppins-SemiBold.ttf'); ?>') format('truetype');
-        }
-        @font-face {
-            font-family: 'Poppins';
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url('<?= base_url('assets/fonts/poppins/Poppins-Bold.ttf'); ?>') format('truetype');
-        }
-
         :root {
-            --app-font: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --app-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         body, button, input, select, textarea, .btn {
             font-family: var(--app-font);

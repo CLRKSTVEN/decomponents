@@ -11,15 +11,37 @@ $userLevel = strtolower((string)$this->session->userdata('level'));
 $avatar    = $this->session->userdata('ez_user_avatar') ?: 'upload/profile/avatar.png';
 $cartCount = 0;
 $cart      = $this->session->userdata('ez_cart') ?? [];
+$cartPreview = [];
+$cartPreviewTotal = 0;
+$cartPreviewLimit = 4;
 if (is_array($cart) && count($cart) > 0) {
     foreach ($cart as $item) {
-        if (is_array($item) && isset($item['qty'])) {
-            $cartCount += (int)$item['qty'];
-        } elseif (is_array($item) && isset($item['quantity'])) {
-            $cartCount += (int)$item['quantity'];
+        if (!is_array($item)) {
+            continue;
+        }
+        $qty = (int)($item['qty'] ?? $item['quantity'] ?? 0);
+        $cartCount += $qty;
+        if ($qty <= 0) {
+            continue;
+        }
+        $name  = isset($item['product_name']) ? $item['product_name'] : ($item['name'] ?? 'Product');
+        $price = (float)($item['product_price'] ?? $item['price'] ?? 0);
+        $imagePath = isset($item['product_image']) ? $item['product_image'] : ($item['image'] ?? '');
+        $image = $imagePath ? base_url(ltrim($imagePath, '/')) : base_url('Pictures/DeComponents.jpeg');
+        $subtotal = $price * $qty;
+        $cartPreviewTotal += $subtotal;
+        if (count($cartPreview) < $cartPreviewLimit) {
+            $cartPreview[] = [
+                'name' => $name,
+                'price' => $price,
+                'qty' => $qty,
+                'image' => $image,
+                'subtotal' => $subtotal,
+            ];
         }
     }
 }
+$cartHasMore = max(0, is_array($cart) ? count($cart) - count($cartPreview) : 0);
 ?>
 
 <style>
@@ -201,6 +223,8 @@ if (is_array($cart) && count($cart) > 0) {
         font-size: 0.875rem;
         transition: all 0.2s ease;
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        border: none;
+        cursor: pointer;
     }
 
     .decom-cart-button:hover {
@@ -225,6 +249,214 @@ if (is_array($cart) && count($cart) > 0) {
         font-weight: 700;
         padding: 0 6px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .decom-cart-dropdown {
+        position: relative;
+    }
+
+    .decom-cart-dropdown .decom-cart-button {
+        min-width: 140px;
+        justify-content: center;
+    }
+
+    .decom-cart-button .decom-cart-caret {
+        font-size: 0.75rem;
+        opacity: 0.85;
+    }
+
+    .decom-cart-menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 10px);
+        width: 340px;
+        max-width: calc(100vw - 32px);
+        max-height: 460px;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-6px);
+        transition: all 0.2s ease;
+        z-index: 120;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .decom-cart-dropdown:hover .decom-cart-menu,
+    .decom-cart-dropdown.open .decom-cart-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .cart-menu-header {
+        padding: 14px 16px 10px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .cart-menu-title {
+        font-weight: 800;
+        color: #1f2937;
+        font-size: 1rem;
+    }
+
+    .cart-menu-subtitle {
+        font-size: 0.82rem;
+        color: #6b7280;
+        margin-top: 2px;
+    }
+
+    .cart-menu-count {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #dbeafe;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+
+    .cart-menu-list {
+        max-height: 280px;
+        overflow-y: auto;
+        padding: 8px 10px;
+    }
+
+    .cart-menu-item {
+        display: grid;
+        grid-template-columns: 56px 1fr auto;
+        gap: 10px;
+        padding: 8px;
+        border-radius: 10px;
+        transition: background 0.15s ease;
+    }
+
+    .cart-menu-item:hover {
+        background: #f9fafb;
+    }
+
+    .cart-menu-thumb {
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+    }
+
+    .cart-menu-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .cart-menu-details {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .cart-menu-name {
+        font-weight: 700;
+        font-size: 0.92rem;
+        color: #111827;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .cart-menu-meta {
+        font-size: 0.82rem;
+        color: #6b7280;
+    }
+
+    .cart-menu-price {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 4px;
+        min-width: 90px;
+        text-align: right;
+    }
+
+    .cart-menu-price strong {
+        color: #2563eb;
+        font-size: 0.95rem;
+    }
+
+    .cart-menu-more {
+        padding: 8px 12px;
+        color: #6b7280;
+        font-size: 0.85rem;
+        border-top: 1px dashed #e5e7eb;
+        margin: 4px 10px 0;
+    }
+
+    .cart-menu-empty {
+        padding: 20px;
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .cart-menu-empty strong {
+        display: block;
+        color: #111827;
+        margin-bottom: 6px;
+    }
+
+    .cart-menu-total {
+        padding: 12px 16px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .cart-menu-total span:last-child {
+        color: #2563eb;
+        font-size: 1.05rem;
+    }
+
+    .cart-menu-actions {
+        display: flex;
+        gap: 10px;
+        padding: 14px 16px 16px;
+    }
+
+    .cart-menu-actions a {
+        flex: 1;
+        text-align: center;
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: 1px solid #e5e7eb;
+        color: #1f2937;
+        transition: all 0.15s ease;
+        text-decoration: none;
+    }
+
+    .cart-menu-actions a:last-child {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
+    }
+
+    .cart-menu-actions a:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 14px rgba(0, 0, 0, 0.08);
     }
 
     /* Avatar Dropdown */
@@ -464,7 +696,8 @@ if (is_array($cart) && count($cart) > 0) {
             height: 40px;
         }
 
-        .decom-cart-button span:not(.decom-cart-badge) {
+        .decom-cart-button .decom-cart-label,
+        .decom-cart-button .decom-cart-caret {
             display: none;
         }
 
@@ -522,11 +755,68 @@ if (is_array($cart) && count($cart) > 0) {
         <!-- User Actions -->
         <div class="decom-user-actions">
             <!-- Cart Button -->
-            <a href="<?= site_url('Decomponents/cart'); ?>" class="decom-cart-button">
-                <span class="decom-cart-icon">🛒</span>
-                <span>Cart</span>
-                <span class="decom-cart-badge" data-cart-count="<?= (int)$cartCount; ?>"><?= (int)$cartCount; ?></span>
-            </a>
+            <div class="decom-cart-dropdown">
+                <button type="button" class="decom-cart-button decom-cart-toggle">
+                    <span class="decom-cart-icon">🛒</span>
+                    <span class="decom-cart-label">Cart</span>
+                    <span class="decom-cart-badge" data-cart-count="<?= (int)$cartCount; ?>"><?= (int)$cartCount; ?></span>
+                    <span class="decom-cart-caret">▾</span>
+                </button>
+                <div class="decom-cart-menu">
+                    <div class="cart-menu-header">
+                        <div>
+                            <div class="cart-menu-title">My Orders</div>
+                            <div class="cart-menu-subtitle">Live cart updates</div>
+                        </div>
+                        <span class="cart-menu-count"><?= (int)$cartCount; ?> item<?= (int)$cartCount === 1 ? '' : 's'; ?></span>
+                    </div>
+
+                    <?php if (!empty($cartPreview)): ?>
+                        <div class="cart-menu-list">
+                            <?php foreach ($cartPreview as $preview): ?>
+                                <div class="cart-menu-item">
+                                    <div class="cart-menu-thumb">
+                                        <img src="<?= $preview['image']; ?>" alt="<?= htmlspecialchars($preview['name'], ENT_QUOTES, 'UTF-8'); ?>">
+                                    </div>
+                                    <div class="cart-menu-details">
+                                        <div class="cart-menu-name" title="<?= htmlspecialchars($preview['name'], ENT_QUOTES, 'UTF-8'); ?>">
+                                            <?= htmlspecialchars($preview['name'], ENT_QUOTES, 'UTF-8'); ?>
+                                        </div>
+                                        <div class="cart-menu-meta">
+                                            ₱<?= number_format($preview['price'], 2); ?> × <?= (int)$preview['qty']; ?>
+                                        </div>
+                                    </div>
+                                    <div class="cart-menu-price">
+                                        <span class="cart-menu-meta">Subtotal</span>
+                                        <strong>₱<?= number_format($preview['subtotal'], 2); ?></strong>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+
+                            <?php if ($cartHasMore > 0): ?>
+                                <div class="cart-menu-more">
+                                    +<?= $cartHasMore; ?> more item<?= $cartHasMore === 1 ? '' : 's'; ?> in cart
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="cart-menu-total">
+                            <span>Total</span>
+                            <span>₱<?= number_format($cartPreviewTotal, 2); ?></span>
+                        </div>
+                    <?php else: ?>
+                        <div class="cart-menu-empty">
+                            <strong>Your cart is empty</strong>
+                            Add products to see them here.
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="cart-menu-actions">
+                        <a href="<?= site_url('Decomponents/cart'); ?>">View cart</a>
+                        <a href="<?= site_url('Decomponents/checkout_review'); ?>">Checkout</a>
+                    </div>
+                </div>
+            </div>
 
             <!-- User Menu -->
             <?php if ($isLoggedIn): ?>
@@ -548,6 +838,9 @@ if (is_array($cart) && count($cart) > 0) {
                         <?php endif; ?>
                         <a href="<?= site_url('Decomponents/profile'); ?>">
                             👤 Profile
+                        </a>
+                        <a href="<?= site_url('Decomponents/track_order'); ?>">
+                            📦 My Orders
                         </a>
                         <a href="<?= site_url('login/logout'); ?>" class="logout-link">
                             🚪 Logout
@@ -634,6 +927,30 @@ if (is_array($cart) && count($cart) > 0) {
         document.addEventListener('keydown', function(ev) {
             if (ev.key === 'Escape' || ev.key === 'Esc') {
                 dropdowns.forEach(d => d.classList.remove('open'));
+            }
+        });
+    })();
+
+    // Cart dropdown toggle (for tap/click)
+    (function() {
+        const cartDropdown = document.querySelector('.decom-cart-dropdown');
+        if (!cartDropdown) return;
+        const cartToggle = cartDropdown.querySelector('.decom-cart-toggle');
+        if (!cartToggle) return;
+        cartToggle.addEventListener('click', function(ev) {
+            ev.preventDefault();
+            cartDropdown.classList.toggle('open');
+        });
+
+        document.addEventListener('click', function(ev) {
+            if (!cartDropdown.contains(ev.target)) {
+                cartDropdown.classList.remove('open');
+            }
+        });
+
+        document.addEventListener('keydown', function(ev) {
+            if (ev.key === 'Escape' || ev.key === 'Esc') {
+                cartDropdown.classList.remove('open');
             }
         });
     })();
