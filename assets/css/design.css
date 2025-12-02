@@ -199,6 +199,35 @@ button:focus,
     border-color: var(--border);
 }
 
+.decom-user-meta {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.decom-user-name {
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.decom-nav-link--pill {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: #0ea5e9;
+    color: #fff;
+}
+
+.decom-nav-link--pill:hover {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #fff;
+}
+
 /* Layout helpers */
 .section-card {
     background: var(--card);

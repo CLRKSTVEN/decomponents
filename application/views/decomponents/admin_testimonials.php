@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<?php include(APPPATH . 'views/includes/head.php'); ?>
+
+<?php
+$resolveImage = function ($path) {
+    if (!$path) {
+        return base_url('upload/profile/avatar.png');
+    }
+    if (preg_match('#^https?://#i', $path) || strpos($path, '//') === 0) {
+        return $path;
+    }
+    return base_url(ltrim($path, '/'));
+};
+?>
+
+<body>
+    <div id="wrapper">
+        <?php include(APPPATH . 'views/includes/top-nav-bar.php'); ?>
+        <?php include(APPPATH . 'views/includes/sidebar.php'); ?>
+
+        <div class="content-page">
+            <div class="content">
+                <div class="container-fluid">
+                    <div class="row mb-3 align-items-center">
+                        <div class="col">
+                            <h4 class="page-title mb-0">Testimonials</h4>
+                            <p class="text-muted mb-0">Manage homepage testimonials.</p>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-primary" data-toggle="modal" data-target="#testimonialModal">
+                                <i class="bi bi-plus-lg"></i> Add Testimonial
+                            </button>
+                        </div>
+                    </div>
+
+                    <?php if ($this->session->flashdata('success')): ?>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <?= $this->session->flashdata('success'); ?>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($this->session->flashdata('error')): ?>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <?= $this->session->flashdata('error'); ?>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered" id="testimonialTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:70px;">Image</th>
+                                            <th>Name</th>
+                                            <th>Role</th>
+                                            <th>Quote</th>
+                                            <th>Active</th>
+                                            <th style="width:140px;" class="text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (!empty($testimonials)): ?>
+                                            <?php foreach ($testimonials as $t): ?>
+                                                <tr>
+                                                    <td><img src="<?= $resolveImage($t['image'] ?? ''); ?>" alt="<?= htmlspecialchars($t['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" style="height:50px;border-radius:6px;border:1px solid #e5e7eb;"></td>
+                                                    <td><?= htmlspecialchars($t['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                    <td><?= htmlspecialchars($t['role'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                    <td><?= htmlspecialchars($t['quote'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                                    <td>
+                                                        <?php if (!empty($t['is_active'])): ?>
+                                                            <span class="badge badge-success">Active</span>
+                                                        <?php else: ?>
+                                                            <span class="badge badge-secondary">Inactive</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <a href="<?= site_url('Decomponents/testimonials/' . (int)$t['id']); ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i></a>
+                                                        <a href="<?= site_url('Decomponents/delete_testimonial/' . (int)$t['id']); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this testimonial?');"><i class="bi bi-trash"></i></a>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted">No testimonials found.</td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="testimonialModal" tabindex="-1" role="dialog" aria-labelledby="testimonialModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="testimonialModalLabel"><?= !empty($edit) ? 'Edit Testimonial' : 'Add Testimonial'; ?></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="testimonialForm" action="<?= site_url('Decomponents/save_testimonial' . (!empty($edit['id']) ? '/' . $edit['id'] : '')); ?>" method="post" enctype="multipart/form-data">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="name">Name</label>
+                                <input type="text" name="name" id="name" class="form-control" required value="<?= html_escape($edit['name'] ?? ''); ?>">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="role">Role/Company</label>
+                                <input type="text" name="role" id="role" class="form-control" value="<?= html_escape($edit['role'] ?? ''); ?>">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="quote">Quote</label>
+                            <textarea name="quote" id="quote" rows="3" class="form-control" required><?= html_escape($edit['quote'] ?? ''); ?></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="image">Image Upload</label>
+                            <input type="file" name="image" id="image" class="form-control-file" accept="image/*">
+                            <?php if (!empty($edit['image'])): ?>
+                                <div class="mt-2">
+                                    <small class="text-muted d-block">Current</small>
+                                    <img src="<?= $resolveImage($edit['image']); ?>" alt="Current image" style="height:80px;border-radius:6px;border:1px solid #e5e7eb;">
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="form-group">
+                            <label for="image_manual">Or Image Path/URL</label>
+                            <input type="text" name="image_manual" id="image_manual" class="form-control" placeholder="upload/testimonials/pic.jpg or https://..." value="">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox" name="is_active" id="is_active" class="form-check-input" <?= !empty($edit['is_active']) ? 'checked' : ''; ?>>
+                            <label class="form-check-label" for="is_active">Active</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                    <button type="submit" form="testimonialForm" class="btn btn-primary"><?= !empty($edit) ? 'Update' : 'Add'; ?></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <?php include(APPPATH . 'views/includes/themecustomizer.php'); ?>
+    <script src="<?= base_url(); ?>assets/js/vendor.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/datatables/jquery.dataTables.min.js"></script>
+    <script src="<?= base_url(); ?>assets/libs/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="<?= base_url(); ?>assets/js/app.min.js"></script>
+    <script>
+        (function() {
+            $('#testimonialTable').DataTable({
+                pageLength: 10,
+                order: [[1, 'asc']],
+                columnDefs: [{ orderable: false, targets: [0, 5] }]
+            });
+
+            <?php if (!empty($edit)): ?>
+            $('#testimonialModal').modal('show');
+            <?php endif; ?>
+        })();
+    </script>
+</body>
+
+</html>

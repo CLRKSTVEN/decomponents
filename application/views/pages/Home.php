@@ -11,11 +11,52 @@
 <body>
     <?php $this->load->view('partials/navbar'); ?>
 
+    <?php
+    $heroTitle = isset($siteSettings['hero_title']) ? $siteSettings['hero_title'] : 'DeComponents - Computer Hardware Store';
+    $heroSubtitle = isset($siteSettings['hero_subtitle']) ? $siteSettings['hero_subtitle'] : 'Performance parts for your next build.';
+    $heroCtaLabel = isset($siteSettings['hero_cta_label']) ? $siteSettings['hero_cta_label'] : 'Shop Now';
+    $heroCtaLink  = isset($siteSettings['hero_cta_link']) ? $siteSettings['hero_cta_link'] : 'products';
+    $featuredProducts = isset($featuredProducts) ? $featuredProducts : [];
+    $resolveImage = function ($path) {
+        if (!$path) {
+            return base_url('Pictures/DeComponents.jpeg');
+        }
+        if (preg_match('#^https?://#i', $path) || strpos($path, '//') === 0) {
+            return $path;
+        }
+        return base_url(ltrim($path, '/'));
+    };
+    ?>
+
     <main class="decom-main">
         <div class="decom-container">
             <div class="decom-hero">
+                <div class="decom-hero-content">
+                    <h1><?= html_escape($heroTitle); ?></h1>
+                    <p><?= html_escape($heroSubtitle); ?></p>
+                    <a class="decom-button" href="<?= site_url($heroCtaLink); ?>"><?= html_escape($heroCtaLabel); ?></a>
+                </div>
                 <img src="<?php echo base_url('Pictures/intelcpu.jpg'); ?>" alt="Latest Intel Processors" class="decom-hero-image">
             </div>
+
+            <?php if (!empty($featuredProducts)): ?>
+                <section class="decom-featured-products">
+                    <div class="section-header">
+                        <h2>Featured Products</h2>
+                        <p>Newest items added by the admin team.</p>
+                    </div>
+                    <div class="decom-category-grid">
+                        <?php foreach ($featuredProducts as $prod): ?>
+                            <div class="decom-category" style="cursor:default;">
+                                <img src="<?= $resolveImage($prod['image'] ?? ''); ?>" alt="<?= htmlspecialchars($prod['name'] ?? 'Product', ENT_QUOTES, 'UTF-8'); ?>" class="decom-category-image">
+                                <h3 class="decom-category-title"><?= htmlspecialchars($prod['name'] ?? 'Product', ENT_QUOTES, 'UTF-8'); ?></h3>
+                                <p class="product-description" style="min-height:48px;"><?= htmlspecialchars($prod['description'] ?? '', ENT_QUOTES, 'UTF-8'); ?></p>
+                                <div class="price" style="font-weight:700;color:#0ea5e9;">₱<?= number_format((float)($prod['price'] ?? 0), 2); ?></div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+            <?php endif; ?>
 
             <!-- Video Section -->
             <div class="decom-video-section">

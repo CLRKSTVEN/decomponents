@@ -7,6 +7,8 @@ class Login extends CI_Controller
         error_reporting(0);
         $this->load->model('Login_model');
         $this->load->model('SettingsModel');
+        $this->load->model('Settings_model');
+        $this->load->model('Auth_visual_model');
         $this->load->library(['session', 'form_validation']);
         $this->load->helper(['url', 'form']);
     }
@@ -83,7 +85,24 @@ class Login extends CI_Controller
 
     function index()
     {
-        $result['data'] = $this->Login_model->loginImage();
+        // If the user is already authenticated, skip the login form.
+        $userId = $this->session->userdata('ez_user_id');
+        $level  = strtolower((string)$this->session->userdata('level'));
+        if ($userId) {
+            if ($level === 'admin') {
+                redirect('Decomponents/admin');
+            } else {
+                redirect('products');
+            }
+            return;
+        }
+
+        $result = [
+            'data'          => $this->Login_model->loginImage(),
+            'login_visual'  => $this->Auth_visual_model->get_active_by_page('login'),
+            'siteSettings'  => $this->Settings_model->get_settings(),
+        ];
+
         $this->load->view('home_page', $result);
     }
 
@@ -150,14 +169,15 @@ class Login extends CI_Controller
 
     public function registration()
     {
+        $signupVisual = $this->Auth_visual_model->get_active_by_page('signup');
+        $siteSettings = $this->Settings_model->get_settings();
+
         // Get reCAPTCHA keys from SettingsModel (o_srms_settings → srms_settings)
         list($recaptcha_site_key, $recaptcha_secret_key) = $this->SettingsModel->get_recaptcha_keys();
         $host = $this->input->server('HTTP_HOST');
         $recaptcha_notice = '';
         if (empty($recaptcha_site_key) || empty($recaptcha_secret_key)) {
             $recaptcha_notice = 'reCAPTCHA keys are missing. Add site_key and sec_key in o_srms_settings.';
-        } else {
-            $recaptcha_notice = 'reCAPTCHA is enabled. Make sure host "' . $host . '" is allowed in your Google keys.';
         }
 
         if ($this->input->post('register')) {
@@ -262,6 +282,8 @@ class Login extends CI_Controller
         $data = [
             'recaptcha_site_key' => $recaptcha_site_key,
             'recaptcha_notice'   => $recaptcha_notice,
+            'signup_visual'      => $signupVisual,
+            'siteSettings'       => $siteSettings,
         ];
         $this->load->view('registration_form', $data);
     }
@@ -307,6 +329,10 @@ class Login extends CI_Controller
                 }
                 $role = !empty($data['role']) ? $data['role'] : 'customer';
 
+                // Keep legacy session keys for existing navbar includes.
+                $this->session->set_userdata('fname', $displayName);
+                $this->session->set_userdata('avatar', basename($avatar));
+
                 $this->session->set_userdata([
                     'ez_user_id'     => $data['id'],
                     'level'          => $role,
@@ -316,8 +342,10 @@ class Login extends CI_Controller
                     'logged_in'      => true,
                 ]);
 
-                // Redirect all users to products page so they can continue shopping
-                redirect('products');
+                // Redirect admins to the dashboard, everyone else to products.
+                $normalizedRole = strtolower((string)$role);
+                $target = $normalizedRole === 'admin' ? 'Decomponents/admin' : 'products';
+                redirect($target);
             } else {
                 $this->session->set_flashdata('danger', 'The email or password is incorrect!');
                 redirect('login');

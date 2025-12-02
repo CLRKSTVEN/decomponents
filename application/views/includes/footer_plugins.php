@@ -11,11 +11,17 @@
 <script src="<?= base_url(); ?>assets/js/vendor.min.js"></script>
 <script src="<?= base_url(); ?>assets/js/app.min.js"></script>
 
+<!-- ✅ SweetAlert2 (single source, avoid conflicts) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <!-- ✅ Other Libraries -->
 <script src="<?= base_url(); ?>assets/libs/moment/moment.min.js"></script>
 <script src="<?= base_url(); ?>assets/libs/jquery-scrollto/jquery.scrollTo.min.js"></script>
+
+<!-- ❌ REMOVE / COMMENT THESE TO AVOID VERSION CONFLICTS
 <script src="<?= base_url(); ?>assets/libs/sweetalert2/sweetalert2.min.js"></script>
 <script src="<?= base_url(); ?>assets/js/sweetalert.min.js"></script>
+-->
 
 <!-- ✅ Emoji Picker -->
 <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
@@ -54,10 +60,61 @@
   };
 </script>
 
-
 <!-- ✅ Bootstrap Dropdown Activation -->
 <script>
   $(document).ready(function() {
     $('.dropdown-toggle').dropdown(); // Make sure dropdowns work
   });
+
+  // (optional) keep your ensureSwalReady + ezToast if you still want them
+  const ensureSwalReady = (() => {
+    let loadingPromise = null;
+    return () => {
+      const hasSwal = typeof Swal !== 'undefined' && typeof Swal.fire === 'function';
+      if (hasSwal) {
+        return Promise.resolve(Swal);
+      }
+      if (loadingPromise) {
+        return loadingPromise;
+      }
+      loadingPromise = new Promise((resolve) => {
+        const cdn = document.createElement('script');
+        cdn.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.all.min.js';
+        cdn.onload = () => resolve(typeof Swal !== 'undefined' ? Swal : null);
+        cdn.onerror = () => resolve(null);
+        document.head.appendChild(cdn);
+      });
+      return loadingPromise;
+    };
+  })();
+  ensureSwalReady();
+
+  window.ezToast = function(type, message) {
+    return ensureSwalReady().then((swalLib) => {
+      if (!swalLib || typeof swalLib.mixin !== 'function') {
+        alert(message);
+        return;
+      }
+      const toast = swalLib.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
+      toast.fire({
+        icon: type,
+        title: message
+      });
+    });
+  };
+
+  <?php $flashSuccess = $this->session->flashdata('success') ?? ''; ?>
+  <?php $flashError   = $this->session->flashdata('error') ?? ''; ?>
+  <?php if (!empty($flashSuccess)): ?>
+    ezToast('success', <?= json_encode($flashSuccess); ?>);
+  <?php endif; ?>
+  <?php if (!empty($flashError)): ?>
+    ezToast('error', <?= json_encode($flashError); ?>);
+  <?php endif; ?>
 </script>

@@ -15,7 +15,7 @@
   display: flex;
   flex-direction: column;
   z-index: 9999;
-  font-family: var(--app-font);
+  font-family: 'Segoe UI', sans-serif;
   border: 1px solid #dee2e6;
   overflow: hidden;
 }

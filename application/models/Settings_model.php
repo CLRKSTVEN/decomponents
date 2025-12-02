@@ -4,24 +4,59 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class Settings_model extends CI_Model
 {
     private $defaults = [
-        'site_name'     => 'EZShop',
-        'tagline'       => 'Curated fits, modern essentials.',
-        'support_email' => 'support@ezshop.local',
-        'support_phone' => '+63 900 000 0000',
-        'address'       => '123 EZ Street, Metro Manila',
-        'logo_path'     => 'Products/Logo1.png',
-        'facebook_url'  => 'https://facebook.com',
-        'instagram_url' => 'https://instagram.com',
-        'youtube_url'   => 'https://youtube.com',
-        'hero_title'    => 'Elevate Your Style, Define Your Identity',
-        'hero_subtitle' => 'Discover curated fashion that speaks to your unique personality. From sophisticated workwear to weekend essentials.',
-        'hero_cta_label' => 'Shop Now',
-        'hero_cta_link' => 'Ezshop/shop',
+        'site_name'      => 'DeComponents',
+        'tagline'        => 'PC parts, trading, and upgrades in one place.',
+        'support_email'  => 'support@decomponents.local',
+        'support_phone'  => '+63 900 000 0000',
+        'address'        => '123 DeComponents St, Metro Manila',
+        'logo_path'      => 'Pictures/DeComponents.jpeg',
+        'hero_image'     => 'Pictures/intelcpu.jpg',
+        'facebook_url'   => 'https://facebook.com/decomponents',
+        'instagram_url'  => 'https://instagram.com/decomponents',
+        'youtube_url'    => 'https://youtube.com/@DeComponents',
+        'hero_title'     => 'Build Faster. Trade Smarter.',
+        'hero_subtitle'  => 'GPUs, CPUs, PSUs, and more curated for your next rig.',
+        'hero_cta_label' => 'Shop Components',
+        'hero_cta_link'  => 'products',
     ];
 
     public function __construct()
     {
         parent::__construct();
+        $this->ensure_table();
+    }
+
+    /**
+     * Ensure site_settings table exists with the expected columns.
+     */
+    private function ensure_table()
+    {
+        if ($this->db->table_exists('site_settings')) {
+            return;
+        }
+
+        $sql = "CREATE TABLE IF NOT EXISTS `site_settings` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `site_name` varchar(255) DEFAULT NULL,
+            `tagline` varchar(255) DEFAULT NULL,
+            `support_email` varchar(255) DEFAULT NULL,
+            `support_phone` varchar(100) DEFAULT NULL,
+            `address` text DEFAULT NULL,
+            `logo_path` varchar(255) DEFAULT NULL,
+            `facebook_url` varchar(255) DEFAULT NULL,
+            `instagram_url` varchar(255) DEFAULT NULL,
+            `youtube_url` varchar(255) DEFAULT NULL,
+            `hero_image` varchar(255) DEFAULT NULL,
+            `hero_title` varchar(255) DEFAULT NULL,
+            `hero_subtitle` varchar(255) DEFAULT NULL,
+            `hero_cta_label` varchar(255) DEFAULT NULL,
+            `hero_cta_link` varchar(255) DEFAULT NULL,
+            `created_at` datetime DEFAULT current_timestamp(),
+            `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+        $this->db->query($sql);
     }
 
     /**
@@ -29,9 +64,7 @@ class Settings_model extends CI_Model
      */
     public function get_settings()
     {
-        if (!$this->db->table_exists('site_settings')) {
-            return $this->defaults;
-        }
+        $this->ensure_table();
 
         $row = $this->db->limit(1)->get('site_settings')->row_array();
         if (!$row) {
@@ -46,9 +79,7 @@ class Settings_model extends CI_Model
      */
     public function upsert_settings(array $data)
     {
-        if (!$this->db->table_exists('site_settings')) {
-            return false;
-        }
+        $this->ensure_table();
 
         $row = $this->db->limit(1)->get('site_settings')->row_array();
         if ($row) {

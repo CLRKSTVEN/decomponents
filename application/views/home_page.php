@@ -151,6 +151,34 @@
   </div>
   <!-- Loader ends-->
 
+<?php
+$loginVisual  = isset($login_visual) ? $login_visual : null;
+$siteSettings = isset($siteSettings) ? $siteSettings : [];
+$srmsRow      = isset($data[0]) ? (array)$data[0] : [];
+
+$resolveImage = function ($path, $fallback) {
+    if (empty($path)) {
+        return $fallback;
+    }
+    if (preg_match('#^https?://#i', $path) || strpos($path, '//') === 0) {
+        return $path;
+    }
+    return base_url(ltrim($path, '/'));
+};
+
+// Try, in order: active auth visual, SRMS loginFormImage/login_form_image, default asset.
+$srmsImage = '';
+if (!empty($srmsRow['loginFormImage'])) {
+    $srmsImage = $srmsRow['loginFormImage'];
+} elseif (!empty($srmsRow['login_form_image'])) {
+    $srmsImage = $srmsRow['login_form_image'];
+}
+$leftImage = $resolveImage($loginVisual['image_path'] ?? $srmsImage, base_url('assets/images/login/2.jpg'));
+$logoPath  = $resolveImage($siteSettings['logo_path'] ?? '', base_url('assets/images/logo/logo.png'));
+$headline  = !empty($loginVisual['headline']) ? $loginVisual['headline'] : 'Welcome back to DeComponents';
+$subhead   = !empty($loginVisual['subheadline']) ? $loginVisual['subheadline'] : 'Sign in to continue shopping and checkout.';
+?>
+
   <section class="login-page-wrapper">
     <div class="container-fluid">
       <div class="row no-gutters">
@@ -158,7 +186,7 @@
         <!-- Left image -->
         <div class="col-xl-5 col-lg-5 col-md-4 login-left-col">
           <img class="login-left-img w-100"
-            src="<?= base_url(); ?>assets/images/login/2.jpg"
+            src="<?= $leftImage; ?>"
             alt="Login background">
         </div>
 
@@ -169,13 +197,13 @@
 
               <!-- Optional logo -->
               <div class="login-brand">
-                <img src="<?= base_url(); ?>assets/images/logo/logo.png" alt="DeComponents">
+                <img src="<?= $logoPath; ?>" alt="DeComponents">
               </div>
 
               <!-- Title + subtitle -->
               <div class="login-title">
-                <h4>Welcome back to DeComponents</h4>
-                <small>Sign in to continue shopping and checkout.</small>
+                <h4><?= html_escape($headline); ?></h4>
+                <small><?= html_escape($subhead); ?></small>
               </div>
 
               <!-- Flash messages -->

@@ -18,6 +18,7 @@ class Decomponents extends CI_Controller
         $this->load->model('Settings_model');
         $this->load->model('Contact_model');
         $this->load->model('Auth_visual_model');
+        $this->load->model('Testimonials_model');
 
 
         // Share site settings with all views.
@@ -42,6 +43,63 @@ class Decomponents extends CI_Controller
             redirect('home_page.php');
             exit;
         }
+    }
+
+    /**
+     * Redirect admins away from public shopping pages.
+     */
+    private function redirect_admin_to_dashboard()
+    {
+        $level = strtolower((string)$this->session->userdata('level'));
+        if ($level === 'admin') {
+            redirect('Decomponents/admin');
+            exit;
+        }
+    }
+
+    /**
+     * Seed default categories if missing and return all categories.
+     */
+    private function ensure_default_categories()
+    {
+        if (!$this->db->table_exists('categories')) {
+            return [];
+        }
+
+        $defaults = [
+            ['name' => 'Central Processor Unit (CPU)', 'slug' => 'cpu'],
+            ['name' => 'Power Supply', 'slug' => 'power-supply'],
+            ['name' => 'GPU', 'slug' => 'gpu'],
+        ];
+
+        $slugs = array_map(function ($row) {
+            return strtolower((string)$row['slug']);
+        }, $this->db->select('slug')->from('categories')->where_in('slug', array_column($defaults, 'slug'))->get()->result_array());
+
+        foreach ($defaults as $cat) {
+            if (!in_array(strtolower($cat['slug']), $slugs, true)) {
+                if ($this->db->field_exists('created_at', 'categories')) {
+                    $cat['created_at'] = date('Y-m-d H:i:s');
+                }
+                $this->db->insert('categories', $cat);
+            }
+        }
+
+        return $this->Category_model->all();
+    }
+
+    /**
+     * Ensure an upload directory exists and is writable.
+     */
+    private function ensure_upload_dir($path)
+    {
+        if (!is_dir($path)) {
+            mkdir($path, 0755, true);
+        }
+        if (!is_writable($path)) {
+            @chmod($path, 0775);
+        }
+        return is_dir($path) && is_writable($path);
     }
 
     /**
@@ -447,6 +505,8 @@ class Decomponents extends CI_Controller
      */
     public function visitor()
     {
+        $this->redirect_admin_to_dashboard();
+
         $data = [
             'page_title' => 'Welcome to DeComponents',
         ];
@@ -456,6 +516,8 @@ class Decomponents extends CI_Controller
     // 1) LANDING PAGE: http://localhost/decomponents/
     public function index()
     {
+        $this->redirect_admin_to_dashboard();
+
         $featured = $this->Product_model->get_all_with_categories();
 
         // If DB has few items, supplement with filesystem scan so the grid stays full.
@@ -510,10 +572,7 @@ class Decomponents extends CI_Controller
     public function shop($category = 'women')
     {
         // Admins should manage via dashboard, not browse shop UI.
-        $role = strtolower((string)$this->session->userdata('level'));
-        if ($role === 'admin') {
-            return redirect('Decomponents/admin');
-        }
+        $this->redirect_admin_to_dashboard();
 
         $category = strtolower($category);
         $map = [
@@ -829,12 +888,15 @@ class Decomponents extends CI_Controller
         $this->require_admin();
 
         $products   = $this->Product_model->get_all_with_categories();
-        $categories = $this->Category_model->all();
+        $categories = $this->ensure_default_categories();
+        $editId     = (int)$this->input->get('edit');
+        $editProduct = $editId ? $this->Product_model->get_product($editId) : null;
 
         $data = [
             'page_title' => 'Manage Products',
             'products'   => $products,
             'categories' => $categories,
+            'editProduct' => $editProduct,
         ];
 
         $this->load->view('decomponents/admin_products', $data);
@@ -851,6 +913,102 @@ class Decomponents extends CI_Controller
             'settings'   => $this->Settings_model->get_settings(),
         ];
         $this->load->view('decomponents/admin_settings', $data);
+    }
+
+    /**
+     * Admin: manage testimonials for homepage.
+     */
+    public function testimonials($id = null)
+    {
+        $this->require_admin();
+        $editId = $id ? (int)$id : null;
+        $edit   = $editId ? $this->Testimonials_model->find($editId) : null;
+
+        $data = [
+            'page_title'  => 'Testimonials',
+            'testimonials'=> $this->Testimonials_model->all(),
+            'edit'        => $edit,
+        ];
+
+        $this->load->view('decomponents/admin_testimonials', $data);
+    }
+
+    /**
+     * Admin: save testimonial.
+     */
+    public function save_testimonial($id = null)
+    {
+        $this->require_admin();
+        if ($this->input->method() !== 'post') {
+            return redirect('Decomponents/testimonials');
+        }
+
+        $payload = [
+            'name'       => trim($this->input->post('name', true)),
+            'role'       => trim($this->input->post('role', true)),
+            'quote'      => trim($this->input->post('quote', true)),
+            'is_active'  => $this->input->post('is_active') ? 1 : 0,
+        ];
+
+        $manualImage = trim($this->input->post('image_manual', true));
+        if ($manualImage !== '') {
+            $payload['image'] = $manualImage;
+        }
+
+        if (!empty($_FILES['image']['name'])) {
+            $uploadPath = FCPATH . 'upload/testimonials/';
+            if (!$this->ensure_upload_dir($uploadPath)) {
+                $this->session->set_flashdata('error', 'Upload folder is not writable: ' . $uploadPath);
+                return redirect('Decomponents/testimonials' . ($id ? '/' . $id : ''));
+            }
+            $config = [
+                'upload_path'   => $uploadPath,
+                'allowed_types' => 'jpg|jpeg|png|gif|webp',
+                'max_size'      => 2048,
+                'file_name'     => 'testimonial_' . time(),
+            ];
+            $this->upload->initialize($config);
+            if ($this->upload->do_upload('image')) {
+                $fileData = $this->upload->data();
+                $payload['image'] = 'upload/testimonials/' . $fileData['file_name'];
+            } else {
+                $this->session->set_flashdata('error', strip_tags($this->upload->display_errors('', '')));
+                return redirect('Decomponents/testimonials' . ($id ? '/' . $id : ''));
+            }
+        } elseif ($id) {
+            $existing = $this->Testimonials_model->find($id);
+            if (!empty($existing['image'])) {
+                $payload['image'] = $existing['image'];
+            }
+        }
+
+        if (!$payload['name'] || !$payload['quote']) {
+            $this->session->set_flashdata('error', 'Name and quote are required.');
+            return redirect('Decomponents/testimonials' . ($id ? '/' . $id : ''));
+        }
+
+        $ok = $id
+            ? $this->Testimonials_model->update($id, $payload)
+            : $this->Testimonials_model->create($payload);
+
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Saved testimonial.' : 'Unable to save testimonial.');
+        return redirect('Decomponents/testimonials');
+    }
+
+    /**
+     * Admin: delete testimonial.
+     */
+    public function delete_testimonial($id)
+    {
+        $this->require_admin();
+        $id = (int)$id;
+        if ($id) {
+            $this->Testimonials_model->delete($id);
+            $this->session->set_flashdata('success', 'Testimonial deleted.');
+        } else {
+            $this->session->set_flashdata('error', 'Invalid testimonial id.');
+        }
+        redirect('Decomponents/testimonials');
     }
 
     /**
@@ -949,8 +1107,9 @@ class Decomponents extends CI_Controller
         // Handle optional image upload.
         if (!empty($_FILES['image_path']['name'])) {
             $uploadPath = FCPATH . 'upload/auth/';
-            if (!is_dir($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
+            if (!$this->ensure_upload_dir($uploadPath)) {
+                $this->session->set_flashdata('error', 'Upload folder is not writable: ' . $uploadPath);
+                return redirect('Decomponents/auth_visuals' . ($id ? '/' . $id : ''));
             }
 
             $config = [
@@ -1034,8 +1193,9 @@ class Decomponents extends CI_Controller
         $imagePath = null;
         if (!empty($_FILES['image']['name'])) {
             $uploadPath = FCPATH . 'upload/products/';
-            if (!is_dir($uploadPath)) {
-                mkdir($uploadPath, 0777, true);
+            if (!$this->ensure_upload_dir($uploadPath)) {
+                $this->session->set_flashdata('error', 'Upload folder is not writable: ' . $uploadPath);
+                return redirect('Decomponents/products');
             }
 
             $config = [
@@ -1183,17 +1343,18 @@ class Decomponents extends CI_Controller
         // home_page.php expects a $data array with login form imagery.
         $loginImage = '';
         if (!empty($data['auth_visual']['image_path'])) {
-            $loginImage = basename((string)$data['auth_visual']['image_path']);
+            $loginImage = (string)$data['auth_visual']['image_path'];
         }
         if ($loginImage === '') {
-            $loginImage = 'logo.png';
+            $loginImage = 'assets/images/login/2.jpg';
         }
 
         $viewPayload = [
-            'data'         => [(object)['login_form_image' => $loginImage, 'loginFormImage' => $loginImage]],
-            'allow_signup' => 'Yes',
-            'active_sy'    => '',
-            'active_sem'   => '',
+            'data'          => [(object)['login_form_image' => $loginImage, 'loginFormImage' => $loginImage]],
+            'login_visual'  => $data['auth_visual'],
+            'allow_signup'  => 'Yes',
+            'active_sy'     => '',
+            'active_sem'    => '',
         ];
 
         return $this->load->view('decomponents/login', $viewPayload);
@@ -1400,8 +1561,9 @@ class Decomponents extends CI_Controller
         // Handle avatar upload
         if (!empty($_FILES['profile_picture']['name'])) {
             $config['upload_path']   = FCPATH . 'upload/profile/';
-            if (!is_dir($config['upload_path'])) {
-                mkdir($config['upload_path'], 0755, true);
+            if (!$this->ensure_upload_dir($config['upload_path'])) {
+                $this->session->set_flashdata('error', 'Upload folder is not writable: ' . $config['upload_path']);
+                return redirect('Decomponents/profile');
             }
             $config['allowed_types'] = 'jpg|jpeg|png|gif|webp';
             $config['max_size']      = 2048;

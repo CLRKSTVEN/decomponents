@@ -4,6 +4,24 @@
 
 <?php include('includes/head.php'); ?>
 
+<?php
+$signupVisual = isset($signup_visual) ? $signup_visual : null;
+$siteSettings = isset($siteSettings) ? $siteSettings : [];
+$resolveImage = function ($path, $fallback) {
+  if (empty($path)) {
+    return $fallback;
+  }
+  if (preg_match('#^https?://#i', $path) || strpos($path, '//') === 0) {
+    return $path;
+  }
+  return base_url(ltrim($path, '/'));
+};
+$leftImage = $resolveImage($signupVisual['image_path'] ?? '', base_url('assets/images/login/2.jpg'));
+$logoPath  = $resolveImage($siteSettings['logo_path'] ?? '', base_url('assets/images/logo/logo.png'));
+$headline  = !empty($signupVisual['headline']) ? $signupVisual['headline'] : 'Create your DeComponents account';
+$subhead   = !empty($signupVisual['subheadline']) ? $signupVisual['subheadline'] : 'Fill in your details to start shopping.';
+?>
+
 <style>
   body {
     background-color: #f4f6fb;
@@ -177,7 +195,7 @@
         <!-- Left image -->
         <div class="col-xl-5 col-lg-5 col-md-4 login-left-col">
           <img class="login-left-img w-100"
-            src="<?= base_url(); ?>assets/images/login/2.jpg"
+            src="<?= $leftImage; ?>"
             alt="Registration background">
         </div>
 
@@ -188,13 +206,13 @@
 
               <!-- Logo -->
               <div class="login-brand">
-                <img src="<?= base_url(); ?>assets/images/logo/logo.png" alt="DeComponents">
+                <img src="<?= $logoPath; ?>" alt="DeComponents">
               </div>
 
               <!-- Title + subtitle -->
               <div class="login-title">
-                <h4>Create your DeComponents account</h4>
-                <small>Fill in your details to start shopping.</small>
+                <h4><?= html_escape($headline); ?></h4>
+                <small><?= html_escape($subhead); ?></small>
               </div>
 
               <!-- Flash messages -->
