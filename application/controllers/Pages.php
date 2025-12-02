@@ -11,6 +11,7 @@ class Pages extends CI_Controller
         $this->load->model('Product_model');
         $this->load->model('Settings_model');
         $this->load->model('Testimonials_model');
+        $this->load->model('News_model');
 
         // Share site settings with all public views.
         $settings = $this->Settings_model->get_settings();
@@ -189,7 +190,10 @@ class Pages extends CI_Controller
 
     public function news()
     {
-        $this->load->view('pages/News');
+        $data = [
+            'newsItems' => $this->News_model->all(true),
+        ];
+        $this->load->view('pages/News', $data);
     }
 
     public function contact()

@@ -20,36 +20,55 @@
 
     <main class="decom-main">
         <div class="decom-container">
+            <?php
+            $newsItems = isset($newsItems) ? $newsItems : [];
+            $hero = $newsItems[0] ?? null;
+            $heroImg = $hero && !empty($hero['image'])
+                ? (preg_match('#^https?://#i', $hero['image']) || strpos($hero['image'], '//') === 0 ? $hero['image'] : base_url($hero['image']))
+                : base_url('Pictures/GPU.jpg');
+            ?>
             <div class="decom-showcase-hero">
-                <img src="<?php echo base_url('Pictures/GPU.jpg'); ?>" alt="GPU News">
+                <img src="<?= $heroImg; ?>" alt="Latest news hero">
                 <div class="decom-container">
-                <h1 class="decom-AboutUS-header">Latest News</h1>
-
+                    <h1 class="decom-AboutUS-header">Latest News</h1>
+                    <?php if ($hero): ?>
+                        <p style="color:#f1f5f9;max-width:720px;margin-top:12px;line-height:1.5;">
+                            <?= html_escape($hero['title']); ?>
+                        </p>
+                    <?php endif; ?>
+                </div>
             </div>
-            <div class="decom-showcase-products">
-                <div class="decom-showcase-item">
-                    <div class="decom-showcase-image">
-                        <img src="<?php echo base_url('Pictures/RTX50.jpg'); ?>" alt="RTX 50 Series">
-                    </div>
-                    <div class=" decom-showcase-content">
-                        <h2>NVIDIA GeForce 50 Series: What to Expect from the Upcoming Big Tech GPU Revolution</h2>
-                        <p>While the GeForce RTX 40 series, based on the Ada Lovelace architecture, has already set a new benchmark for performance, it seems that NVIDIA is already looking ahead to their next-gen GPUs, the RTX 50 series. Sources from industry insiders suggest that the RTX 50 cards will be based on an even more advanced architecture, codenamed Lovelace 2, designed to push the boundaries of ray tracing, DLSS technology, and AI-driven performance.</p>
-                        <br>
-                        <p>While specific details remain under wraps, early reports indicate that the RTX 50 series will focus heavily on next-gen gaming experiences, with 4K, 8K, and even 16K gaming becoming increasingly feasible at smooth frame rates. The GPUs will feature an improved fabrication process (likely 3nm or smaller) and powerful custom chips that will offer not only higher raw performance but also better power efficiency and thermal management.</p>
-                    </div>
-                </div>
 
-                <div class="decom-showcase-item">
-                    <div class="decom-showcase-image">
-                        <img src="<?php echo base_url('Pictures/RAEDON7000.jpg'); ?>" alt="Radeon 7000">
+            <div class="decom-showcase-products">
+                <?php if (!empty($newsItems)): ?>
+                    <?php foreach ($newsItems as $item): ?>
+                        <?php
+                        $img = !empty($item['image'])
+                            ? (preg_match('#^https?://#i', $item['image']) || strpos($item['image'], '//') === 0 ? $item['image'] : base_url($item['image']))
+                            : base_url('Pictures/DeComponents.jpeg');
+                        $excerpt = !empty($item['excerpt']) ? $item['excerpt'] : '';
+                        $body = !empty($item['body']) ? $item['body'] : '';
+                        ?>
+                        <div class="decom-showcase-item">
+                            <div class="decom-showcase-image">
+                                <img src="<?= $img; ?>" alt="<?= html_escape($item['title'] ?? 'News'); ?>">
+                            </div>
+                            <div class="decom-showcase-content">
+                                <h2><?= html_escape($item['title'] ?? ''); ?></h2>
+                                <?php if ($excerpt): ?>
+                                    <p><?= nl2br(html_escape($excerpt)); ?></p>
+                                <?php endif; ?>
+                                <?php if ($body): ?>
+                                    <p><?= nl2br(html_escape($body)); ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div style="padding:32px 0;text-align:center;">
+                        <p class="text-muted">No news posts yet. Please check back soon.</p>
                     </div>
-                    <div class=" decom-showcase-content">
-                        <h2>AMD Radeon’s Latest Graphics Cards: The Future of Gaming and Content Creation</h2>
-                        <p>As AMD continues its battle for dominance in the GPU market, the company is once again raising the bar with the release of its latest Radeon RX 7000 series graphics cards. With the RDNA 3 architecture, AMD has made significant strides in gaming and productivity performance, and the new GPUs are positioning themselves as formidable contenders against NVIDIA's high-end offerings. Here’s everything we know about AMD’s upcoming Radeon RX 7800 XT, Radeon RX 7900 XT, and Radeon RX 7950 XT—the most powerful GPUs to date from the red team.</p>
-                        <br>
-                        <p>The new Radeon RX 7000 series represents a significant leap forward for AMD, and with RDNA 3, the company is well-positioned to continue its challenge to NVIDIA’s dominance in the GPU space. With powerful performance improvements in ray tracing, AI upscaling, and 4K gaming, AMD is delivering impressive alternatives to NVIDIA’s high-end graphics cards. If AMD continues on this trajectory, the Radeon RX 7000 series may just be the best choice for gamers and content creators looking for top-tier performance without breaking the bank.</p>
-                    </div>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </main>

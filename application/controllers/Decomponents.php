@@ -19,6 +19,7 @@ class Decomponents extends CI_Controller
         $this->load->model('Contact_model');
         $this->load->model('Auth_visual_model');
         $this->load->model('Testimonials_model');
+        $this->load->model('News_model');
 
 
         // Share site settings with all views.
@@ -950,6 +951,106 @@ class Decomponents extends CI_Controller
             $this->session->set_flashdata('error', 'Invalid testimonial id.');
         }
         redirect('Decomponents/testimonials');
+    }
+
+    /**
+     * Admin: manage news posts.
+     */
+    public function news_admin()
+    {
+        $this->require_admin();
+
+        $editId = (int)$this->input->get('edit');
+        $data = [
+            'page_title' => 'News',
+            'news'       => $this->News_model->all(false),
+            'editNews'   => $editId ? $this->News_model->find($editId) : null,
+        ];
+
+        $this->load->view('decomponents/admin_news', $data);
+    }
+
+    /**
+     * Admin: save or update a news post.
+     */
+    public function save_news($id = null)
+    {
+        $this->require_admin();
+        if ($this->input->method() !== 'post') {
+            return redirect('Decomponents/news_admin');
+        }
+
+        $id = $id ? (int)$id : null;
+        $title   = trim($this->input->post('title', true));
+        $excerpt = trim($this->input->post('excerpt', true));
+        $body    = trim($this->input->post('body', false));
+        $imageManual = trim($this->input->post('image_manual', true));
+        $isPublished = $this->input->post('is_published') ? 1 : 0;
+
+        $payload = [
+            'title'        => $title,
+            'excerpt'      => $excerpt,
+            'body'         => $body,
+            'is_published' => $isPublished,
+        ];
+
+        if ($imageManual !== '') {
+            $payload['image'] = $imageManual;
+        }
+
+        // Handle upload
+        if (!empty($_FILES['image']['name'])) {
+            $uploadPath = FCPATH . 'upload/news/';
+            if (!$this->ensure_upload_dir($uploadPath)) {
+                $this->session->set_flashdata('error', 'Upload folder is not writable: ' . $uploadPath);
+                return redirect('Decomponents/news_admin' . ($id ? '?edit=' . $id : ''));
+            }
+
+            $config = [
+                'upload_path'   => $uploadPath,
+                'allowed_types' => 'jpg|jpeg|png|gif|webp',
+                'max_size'      => 4096,
+                'file_name'     => 'news_' . time(),
+            ];
+
+            $this->upload->initialize($config);
+            if ($this->upload->do_upload('image')) {
+                $fileData = $this->upload->data();
+                $payload['image'] = 'upload/news/' . $fileData['file_name'];
+            } else {
+                $this->session->set_flashdata('error', strip_tags($this->upload->display_errors('', '')));
+                return redirect('Decomponents/news_admin' . ($id ? '?edit=' . $id : ''));
+            }
+        } elseif ($id) {
+            $existing = $this->News_model->find($id);
+            if (!empty($existing['image'])) {
+                $payload['image'] = $existing['image'];
+            }
+        }
+
+        if (!$payload['title']) {
+            $this->session->set_flashdata('error', 'Title is required.');
+            return redirect('Decomponents/news_admin' . ($id ? '?edit=' . $id : ''));
+        }
+
+        $ok = $this->News_model->save($payload, $id);
+        $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Saved news post.' : 'Unable to save news post.');
+        return redirect('Decomponents/news_admin');
+    }
+
+    /**
+     * Admin: delete a news post.
+     */
+    public function delete_news($id)
+    {
+        $this->require_admin();
+        $id = (int)$id;
+        if ($id && $this->News_model->delete($id)) {
+            $this->session->set_flashdata('success', 'News post deleted.');
+        } else {
+            $this->session->set_flashdata('error', 'Unable to delete news post.');
+        }
+        return redirect('Decomponents/news_admin');
     }
 
     /**

@@ -87,6 +87,12 @@ $active = function ($prefix) use ($uri) {
                             <span> Testimonials </span>
                         </a>
                     </li>
+                    <li class="<?= $active('Decomponents/news_admin'); ?>">
+                        <a href="<?= site_url('Decomponents/news_admin'); ?>" class="waves-effect">
+                            <i class="bi bi-newspaper"></i>
+                            <span> News </span>
+                        </a>
+                    </li>
 
                     <li class="<?= $active('Decomponents/settings'); ?>">
                         <a href="<?= site_url('Decomponents/settings'); ?>" class="waves-effect">
