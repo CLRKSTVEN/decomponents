@@ -1971,11 +1971,15 @@ class Decomponents extends CI_Controller
 
         $orders = $this->Decomponents_model->get_orders_by_user($userId);
         $user   = $this->Decomponents_model->get_user_by_id($userId);
+        $cartCleared = (bool)$this->session->flashdata('cart_cleared');
+        $showHistory = $this->input->get('history') === '1' || !$cartCleared;
 
         $data = [
-            'page_title' => 'Track Your Orders',
-            'orders'     => $orders,
-            'user'       => $user,
+            'page_title'  => 'Track Your Orders',
+            'orders'      => $orders,
+            'user'        => $user,
+            'cartCleared' => $cartCleared,
+            'showHistory' => $showHistory,
         ];
 
         $this->load->view('decomponents/track_order', $data);
@@ -2010,6 +2014,8 @@ class Decomponents extends CI_Controller
     }
     public function clear_cart()
     {
+        // Clear server cart state
+        $this->session->set_userdata('ez_cart', []);
         $this->session->unset_userdata('ez_cart');
         $this->session->set_flashdata('success', 'Cart cleared. You can view your order history in My Orders.');
         $this->session->set_flashdata('cart_cleared', true);

@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($page_title) ? htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8') : 'Cart'; ?></title>
 
-    <link rel="icon" href="<?= base_url('Pictures/Decomponents.jpeg'); ?>">
+    <link rel="icon" href="<?= base_url('Pictures/Decomponents.jpeg'); ?>" type="image/jpeg">
+    <link rel="shortcut icon" href="<?= base_url('Pictures/Decomponents.jpeg'); ?>" type="image/jpeg">
+    <link rel="apple-touch-icon" href="<?= base_url('Pictures/Decomponents.jpeg'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/design.css'); ?>">
 
     <style>
@@ -520,7 +522,7 @@
                         <a class="decom-button decom-button--ghost" href="<?= site_url('products'); ?>">
                             ← Continue Shopping
                         </a>
-                        <a class="decom-button decom-button--ghost" href="<?= site_url('Decomponents/track_order'); ?>">
+                        <a class="decom-button decom-button--ghost" href="<?= site_url('Decomponents/track_order?history=1'); ?>">
                             Order History
                         </a>
                     </div>

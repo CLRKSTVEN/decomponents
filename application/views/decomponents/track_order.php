@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($page_title) ? htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8') : 'My Orders'; ?></title>
-    <link rel="icon" href="<?= base_url('Pictures/Decomponents.jpeg'); ?>">
+    <link rel="icon" href="<?= base_url('Pictures/Decomponents.jpeg'); ?>" type="image/jpeg">
+    <link rel="shortcut icon" href="<?= base_url('Pictures/Decomponents.jpeg'); ?>" type="image/jpeg">
+    <link rel="apple-touch-icon" href="<?= base_url('Pictures/Decomponents.jpeg'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/design.css'); ?>">
     <style>
         :root {
@@ -264,10 +266,16 @@
                     </div>
                 </div>
                 <div style="display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap;">
-                    <a href="<?= site_url('Decomponents/track_order'); ?>" class="decom-button decom-button--ghost">Order History</a>
+                    <a href="<?= site_url('Decomponents/track_order?history=1'); ?>" class="decom-button decom-button--ghost">Order History</a>
                     <a href="<?= site_url('Decomponents/clear_cart'); ?>" class="decom-button decom-button--ghost">Clear Cart</a>
                 </div>
             </div>
+
+            <?php if (!empty($cartCleared) && empty($showHistory)): ?>
+                <div class="alert alert-success">
+                    Cart cleared. Your cart is empty. Click “Order History” to view past orders.
+                </div>
+            <?php endif; ?>
 
             <?php if ($this->session->flashdata('error')): ?>
                 <div class="alert alert-danger">
@@ -280,7 +288,17 @@
                 </div>
             <?php endif; ?>
 
-            <?php if (!empty($orders)): ?>
+            <?php if ($this->session->flashdata('cart_cleared')): ?>
+                <script>
+                    (function() {
+                        try {
+                            localStorage.removeItem('cart');
+                        } catch (e) {}
+                    })();
+                </script>
+            <?php endif; ?>
+
+            <?php if (!empty($orders) && !empty($showHistory)): ?>
                 <div class="orders-grid">
                     <?php foreach ($orders as $orderRaw): ?>
                         <?php
