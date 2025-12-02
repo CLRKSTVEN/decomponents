@@ -7,12 +7,28 @@
     <link rel="icon" href="<?php echo base_url('Pictures/Decomponents.jpeg'); ?>" type="image/jpeg">
     <link rel="shortcut icon" href="<?php echo base_url('Pictures/Decomponents.jpeg'); ?>" type="image/jpeg">
     <link rel="apple-touch-icon" href="<?php echo base_url('Pictures/Decomponents.jpeg'); ?>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo base_url('assets/css/design.css'); ?>">
 </head>
 <body>
     <?php $this->load->view('partials/navbar'); ?>
 
     <main class="decom-main">
+        <div class="decom-container" style="margin-top:16px;">
+            <?php if ($this->session->flashdata('success')): ?>
+                <div class="alert alert-success" role="alert">
+                    <?= $this->session->flashdata('success'); ?>
+                </div>
+            <?php endif; ?>
+            <?php if ($this->session->flashdata('error')): ?>
+                <div class="alert alert-danger" role="alert">
+                    <?= $this->session->flashdata('error'); ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
 <div class="decom-contact-section">
     <div class="decom-contact-header">
         <h1>Contact us and Submit a Concern</h1>
@@ -49,18 +65,18 @@
             </div>
         </div>
 
-        <form class="decom-contact-form">
+        <form class="decom-contact-form" method="post" action="<?php echo site_url('Decomponents/send_contact'); ?>">
             <div class="decom-form-group">
-                <input type="text" class="decom-form-input" placeholder="Name:" required>
+                <input type="text" name="name" class="decom-form-input" placeholder="Name:" required>
             </div>
             <div class="decom-form-group">
-                <input type="email" class="decom-form-input" placeholder="Email:" required>
+                <input type="email" name="email" class="decom-form-input" placeholder="Email:" required>
             </div>
             <div class="decom-form-group">
-                <input type="tel" class="decom-form-input" placeholder="Phone:" required>
+                <input type="text" name="subject" class="decom-form-input" placeholder="Subject:" required>
             </div>
             <div class="decom-form-group">
-                <textarea class="decom-form-textarea" placeholder="Message:" required></textarea>
+                <textarea name="message" class="decom-form-textarea" placeholder="Message:" required></textarea>
             </div>
             <div class="decom-form-submit">
                 <button type="submit" class="decom-button-submit">Submit</button>
@@ -70,7 +86,7 @@
 </div>
     </main>
 
- <footer class="decom-footer">
+    <footer class="decom-footer">
         <nav class="decom-footer-nav">
             <a href="<?php echo site_url("home"); ?>">HOME</a>
             <a href="<?php echo site_url("products"); ?>">PRODUCTS</a>
@@ -80,16 +96,48 @@
             <a href="<?php echo site_url("contact"); ?>">CONTACT</a>
         </nav>
         <div class="decom-social-links">
-            <a href="https://www.youtube.com/@DeComponents"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href="https://www.facebook.com/profile.php?id=61568617385907"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href="https://www.tiktok.com/@decomponents"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href="https://www.linkedin.com/in/de-components-934ba3337/"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
-            <a href="#"target="_blank"><img src="<?php echo base_url('Pictures/'); ?>></a>
+            <a href="https://www.youtube.com/@DeComponents" target="_blank"><img src="<?php echo base_url('Pictures/Yutob.webp'); ?>" alt="YouTube"></a>
+            <a href="https://www.facebook.com/profile.php?id=61568617385907" target="_blank"><img src="<?php echo base_url('Pictures/Fishbuk.webp'); ?>" alt="Facebook"></a>
+            <a href="https://www.tiktok.com/@decomponents" target="_blank"><img src="<?php echo base_url('Pictures/Tiktook.png'); ?>" alt="TikTok"></a>
+            <a href="https://www.linkedin.com/in/de-components-934ba3337/" target="_blank"><img src="<?php echo base_url('Pictures/linkedin.png'); ?>" alt="LinkedIn"></a>
+            <a href="#" target="_blank"><img src="<?php echo base_url('Pictures/Instagram.png'); ?>" alt="Instagram"></a>
         </div>
         <div class="decom-contact-email">
             <a href="mailto:decomponents.24@gmail.com">DeComponents.24@Gmail.com</a>
         </div>
         <p class="decom-copyright">© 2024 by DeComponents. All Rights Reserved.</p>
     </footer>
+
+    <?php if (!empty($messages)): ?>
+        <section class="decom-container" style="padding:24px 0 48px;">
+            <h2 style="margin-bottom:12px;">Recent Contact Messages</h2>
+            <div style="overflow-x:auto;">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($messages as $msg): ?>
+                            <tr>
+                                <td><?php echo (int)$msg['id']; ?></td>
+                                <td><?php echo htmlspecialchars($msg['name'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?php echo htmlspecialchars($msg['email'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?php echo htmlspecialchars($msg['subject'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?php echo htmlspecialchars($msg['status'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?php echo htmlspecialchars(date('M d, Y h:i A', strtotime($msg['created_at'])), ENT_QUOTES, 'UTF-8'); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    <?php endif; ?>
 </body>
 </html>

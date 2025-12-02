@@ -6,6 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 <meta charset="utf-8">
 <title>Error</title>
 <style type="text/css">
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700&display=swap');
 
 ::selection { background-color: #E13300; color: white; }
 ::-moz-selection { background-color: #E13300; color: white; }
@@ -13,7 +14,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 body {
 	background-color: #fff;
 	margin: 40px;
-	font: 13px/20px normal Helvetica, Arial, sans-serif;
+	font: 13px/20px normal 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 	color: #4F5155;
 }
 

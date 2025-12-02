@@ -1873,7 +1873,23 @@ class Decomponents extends CI_Controller
         $data['cartCount']  = $cartCount;
         $data['user']       = $userId ? $this->Decomponents_model->get_user_by_id($userId) : null;
         $data['category']   = 'info';
-        $this->load->view('decomponents/about', $data);
+        $this->load->view('pages/AboutUs', $data);
+    }
+
+    public function tradables()
+    {
+        $cart = $this->session->userdata('ez_cart') ?? [];
+        $cartCount = 0;
+        foreach ($cart as $item) {
+            $cartCount += (int)($item['qty'] ?? 1);
+        }
+        $userId = $this->session->userdata('ez_user_id');
+
+        $data['page_title'] = 'Tradables';
+        $data['cartCount']  = $cartCount;
+        $data['user']       = $userId ? $this->Decomponents_model->get_user_by_id($userId) : null;
+        $data['category']   = 'info';
+        $this->load->view('pages/Tradables', $data);
     }
 
     public function contact()
@@ -1889,7 +1905,10 @@ class Decomponents extends CI_Controller
         $data['cartCount']  = $cartCount;
         $data['user']       = $userId ? $this->Decomponents_model->get_user_by_id($userId) : null;
         $data['category']   = 'info';
-        $this->load->view('decomponents/contact', $data);
+        $data['messages']   = ($this->session->userdata('level') === 'admin')
+            ? $this->Contact_model->get_messages(100)
+            : [];
+        $this->load->view('pages/Contact', $data);
     }
 
     /**

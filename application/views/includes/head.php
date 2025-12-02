@@ -27,10 +27,10 @@
     <link rel="stylesheet" href="<?= base_url('assets/css/masterlist-responsive.css'); ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --app-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --app-font: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         body, button, input, select, textarea, .btn {
             font-family: var(--app-font);
