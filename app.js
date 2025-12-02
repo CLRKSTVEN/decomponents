@@ -2,6 +2,7 @@ let listProductHTML = document.querySelector('.listProduct');
 let listCartHTML = document.querySelector('.listCart');
 let iconCart = document.querySelector('.icon-cart');
 let iconCartSpan = document.querySelector('.icon-cart span');
+let navCartBadge = document.querySelector('.decom-cart-badge');
 let body = document.querySelector('body');
 let closeCart = document.querySelector('.close');
 let categoryFilter = document.querySelector('#categoryFilter');
@@ -390,7 +391,12 @@ if (listProductHTML) {
     });
 }
 
-const addToCart = (product_id) => {
+const addToCart = async (product_id) => {
+    // Confirm intent before proceeding
+    const confirmed = window.confirm('Add this item to your cart?');
+    if (!confirmed) return;
+
+    // Add to client cart first (works for guests too)
     const positionThisProductInCart = cart.findIndex((value) => value.product_id == product_id);
     if (cart.length <= 0) {
         cart = [{
@@ -408,13 +414,14 @@ const addToCart = (product_id) => {
     addCartToHTML();
     addCartToMemory();
 
-    // Show add-to-cart confirmation modal instead of immediately opening the cart panel
+    // Show add-to-cart confirmation modal
     const productInfo = findProductById(product_id) || { name: 'Product' };
     if (addCartModalMsg) {
         addCartModalMsg.innerText = `${productInfo.name} added to your cart.`;
     }
     showModal(addCartModal);
 
+    // Best-effort sync to server if logged in; if not, checkout flow will prompt
     if (addToCartUrl) {
         syncCartItemToServer(product_id, 1);
     }
@@ -428,13 +435,23 @@ const addCartToMemory = () => {
     }
 };
 
+const updateCartBadges = (count) => {
+    if (iconCartSpan) {
+        iconCartSpan.innerText = count;
+    }
+    if (navCartBadge) {
+        navCartBadge.innerText = count;
+    }
+};
+
 const addCartToHTML = () => {
     if (!listCartHTML) return;
     listCartHTML.innerHTML = '';
     let totalQuantity = 0;
     if (cart.length > 0) {
         cart.forEach(item => {
-            totalQuantity = totalQuantity + item.quantity;
+            const qty = item.quantity || item.qty || 0;
+            totalQuantity = totalQuantity + qty;
             const positionProduct = products.findIndex((value) => value.id == item.product_id);
             if (positionProduct < 0) {
                 return;
@@ -450,19 +467,17 @@ const addCartToHTML = () => {
                 <div class="name">
                 ${info.name}
                 </div>
-                <div class="totalPrice">$${info.price * item.quantity}</div>
+                <div class="totalPrice">$${info.price * qty}</div>
                 <div class="quantity">
                     <span class="minus"><</span>
-                    <span>${item.quantity}</span>
+                    <span>${qty}</span>
                     <span class="plus">></span>
                 </div>
             `;
             listCartHTML.appendChild(newItem);
         });
     }
-    if (iconCartSpan) {
-        iconCartSpan.innerText = totalQuantity;
-    }
+    updateCartBadges(totalQuantity);
 };
 
 if (listCartHTML) {
@@ -558,6 +573,10 @@ const initApp = () => {
         if (cachedCart) {
             cart = JSON.parse(cachedCart);
             addCartToHTML();
+        }
+        // Ensure badge shows zero when nothing loaded
+        if (!cachedCart) {
+            updateCartBadges(0);
         }
     };
 

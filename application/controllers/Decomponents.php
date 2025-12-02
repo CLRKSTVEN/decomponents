@@ -1848,59 +1848,56 @@ class Decomponents extends CI_Controller
             return redirect($loginUrl);
         }
 
-        $product_id = $this->input->post('product_id');
         $full_name  = trim($this->input->post('full_name'));
         $email      = trim($this->input->post('email'));
         $address    = trim($this->input->post('address'));
         $pay_method_raw = strtolower(trim($this->input->post('payment_method')));
-        $allowedPayMethods = ['credit_card', 'paypal', 'bank_transfer', 'cod'];
+        $allowedPayMethods = ['credit_card', 'paypal', 'bank_transfer', 'cod', 'card', 'gcash'];
         $pay_method = in_array($pay_method_raw, $allowedPayMethods, true) ? $pay_method_raw : 'cod';
 
-        if (!$product_id || !$full_name || !$email || !$address) {
+        if (!$full_name || !$email || !$address) {
             $this->session->set_flashdata('error', 'Please complete all required fields.');
             return redirect('Decomponents/payment_form');
         }
 
         $cart = $this->session->userdata('ez_cart') ?? [];
+        if (empty($cart)) {
+            $this->session->set_flashdata('error', 'Your cart is empty.');
+            return redirect('Decomponents/cart');
+        }
+
         $userId = $user_id;
+        $total = 0;
+        foreach ($cart as $item) {
+            $price = (float)($item['product_price'] ?? $item['price'] ?? 0);
+            $qty   = (int)($item['qty'] ?? $item['quantity'] ?? 1);
+            $total += $price * $qty;
+        }
 
-        $orderedItem = null;
-        foreach ($cart as $index => $item) {
-            if ($item['id'] == $product_id) {
-                $orderedItem = $item;
-                unset($cart[$index]);
-                break;
+        $orderData = [
+            'user_id'          => $userId ?: null,
+            'full_name'        => $full_name,
+            'email'            => $email,
+            'shipping_address' => $address,
+            'payment_method'   => $pay_method,
+            'status'           => 'pending',
+            'quantity'         => 0,
+            'total_amount'     => $total,
+            'created_at'       => date('Y-m-d H:i:s'),
+        ];
+        $newOrderId = $this->Decomponents_model->create_order($orderData);
+
+        if ($newOrderId && $this->db->table_exists('order_items')) {
+            foreach ($cart as $item) {
+                $pid   = $item['product_id'] ?? $item['id'] ?? 0;
+                $price = (float)($item['product_price'] ?? $item['price'] ?? 0);
+                $qty   = (int)($item['qty'] ?? $item['quantity'] ?? 1);
+                $this->Decomponents_model->add_order_item($newOrderId, $pid, $qty, $price);
             }
         }
 
-        // Re-index cart and save.
-        $cart = array_values($cart);
-        $this->session->set_userdata('ez_cart', $cart);
-
-        // If we found the item, save an order row.
-        if ($orderedItem) {
-            $total = (float)($orderedItem['price'] ?? 0) * (int)($orderedItem['qty'] ?? 1);
-            $orderData = [
-                'user_id'          => $userId ?: null,
-                'full_name'        => $full_name,
-                'email'            => $email,
-                'shipping_address' => $address,
-                'payment_method'   => $pay_method,
-                'status'           => 'pending',
-                'quantity'         => (int)($orderedItem['qty'] ?? 1),
-                'total_amount'     => $total,
-                'created_at'       => date('Y-m-d H:i:s'),
-            ];
-            $newOrderId = $this->Decomponents_model->create_order($orderData);
-            if ($newOrderId && $this->db->table_exists('order_items')) {
-                $this->Decomponents_model->add_order_item(
-                    $newOrderId,
-                    $orderedItem['id'] ?? 0,
-                    $orderedItem['qty'] ?? 1,
-                    $orderedItem['price'] ?? 0
-                );
-            }
-        }
+        // Clear cart after order
+        $this->session->set_userdata('ez_cart', []);
 
         redirect('Decomponents/thank_you');
     }

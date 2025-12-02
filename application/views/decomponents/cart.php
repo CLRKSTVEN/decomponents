@@ -4,9 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout Review</title>
+    <title><?= isset($page_title) ? htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8') : 'Cart'; ?></title>
+
     <link rel="icon" href="<?= base_url('Pictures/Decomponents.jpeg'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/design.css'); ?>">
+
     <style>
         :root {
             --primary-color: #2563eb;
@@ -20,7 +22,6 @@
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
         .decom-main {
@@ -30,7 +31,7 @@
         }
 
         .decom-container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 0 24px;
         }
@@ -51,53 +52,6 @@
         .section-header p {
             font-size: 1rem;
             color: var(--text-secondary);
-        }
-
-        /* Progress Indicator */
-        .checkout-progress {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 32px;
-            padding: 0 24px;
-        }
-
-        .progress-step {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .progress-step.active {
-            color: var(--primary-color);
-        }
-
-        .progress-dot {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-        }
-
-        .progress-step.active .progress-dot {
-            background: var(--primary-color);
-            color: white;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-        }
-
-        .progress-arrow {
-            color: #d1d5db;
-            font-size: 1.2rem;
         }
 
         /* Alert Styles */
@@ -130,169 +84,163 @@
             color: #991b1b;
         }
 
-        /* Checkout Card */
-        .checkout-card {
-            background: #ffffff;
-            border: 2px solid var(--border-color);
+        .alert-success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        /* Cart Grid */
+        .cart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .cart-card {
             border-radius: 16px;
-            box-shadow: var(--shadow-lg);
-            padding: 24px;
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            background: #ffffff;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
 
-        .checkout-card::before {
+        .cart-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 3px;
             background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
         }
 
-        .checkout-items-header {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--text-primary);
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--bg-light);
-        }
-
-        .checkout-item {
-            display: grid;
-            grid-template-columns: 100px 1fr auto;
-            gap: 20px;
-            align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid var(--border-color);
-            transition: background 0.2s ease;
-        }
-
-        .checkout-item:hover {
-            background: var(--bg-light);
-            margin: 0 -16px;
-            padding-left: 16px;
-            padding-right: 16px;
-            border-radius: 8px;
-        }
-
-        .checkout-item:last-child {
-            border-bottom: none;
-        }
-
-        .checkout-item-image {
-            position: relative;
-        }
-
-        .checkout-item img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 12px;
-            border: 2px solid var(--border-color);
-            background: #fff;
-            transition: transform 0.2s ease;
-        }
-
-        .checkout-item:hover img {
-            transform: scale(1.05);
+        .cart-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
             border-color: var(--primary-color);
         }
 
-        .checkout-item-details {
-            flex: 1;
+        .cart-card:hover::before {
+            transform: scaleX(1);
         }
 
-        .checkout-item-name {
+        .cart-card-image-wrapper {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .cart-card-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .cart-card:hover .cart-card-image-wrapper img {
+            transform: scale(1.05);
+        }
+
+        .cart-card-title {
             font-weight: 700;
             font-size: 1rem;
-            color: var(--text-primary);
-            margin-bottom: 8px;
             line-height: 1.4;
+            min-height: 2.6em;
+            color: var(--text-primary);
         }
 
-        .checkout-item-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .cart-card-meta {
             font-size: 0.9rem;
             color: var(--text-secondary);
-        }
-
-        .checkout-item-price {
-            font-weight: 600;
-            padding: 4px 10px;
-            background: var(--bg-light);
-            border-radius: 6px;
-        }
-
-        .checkout-item-quantity {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            background: #e0f2fe;
-            color: #0369a1;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-
-        .checkout-item-quantity::before {
-            content: '×';
-            font-weight: 700;
-        }
-
-        .checkout-item-subtotal {
-            font-weight: 800;
-            font-size: 1.15rem;
-            color: var(--primary-color);
-            text-align: right;
-        }
-
-        /* Summary Section */
-        .checkout-summary-divider {
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--border-color), transparent);
-            margin: 24px 0;
-        }
-
-        .checkout-summary {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            padding-top: 8px;
+            padding: 8px 12px;
+            background: var(--bg-light);
+            border-radius: 8px;
         }
 
-        .checkout-total-section {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .checkout-total-label {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
+        .cart-card-price {
             font-weight: 600;
+        }
+
+        .cart-card-quantity {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cart-card-quantity::before {
+            content: '×';
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .cart-card-subtotal {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+            font-weight: 800;
+            font-size: 1.15rem;
+            text-align: right;
+            color: var(--primary-color);
+        }
+
+        /* Cart Summary */
+        .cart-summary {
+            border-radius: 16px;
+            border: 2px solid var(--border-color);
+            padding: 28px 32px;
+            background: #ffffff;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .cart-summary-actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .cart-summary-total {
+            text-align: right;
+        }
+
+        .cart-summary-total .label {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            margin-bottom: 4px;
         }
 
-        .checkout-total {
+        .cart-summary-total .amount {
             font-size: 2rem;
             font-weight: 800;
             color: var(--primary-color);
+            display: block;
+            margin-bottom: 16px;
             letter-spacing: -0.025em;
-        }
-
-        .checkout-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
         }
 
         /* Buttons */
@@ -307,7 +255,6 @@
             cursor: pointer;
             border: 2px solid transparent;
             text-align: center;
-            white-space: nowrap;
         }
 
         .decom-button:not(.decom-button--ghost) {
@@ -439,52 +386,30 @@
                 font-size: 1.5rem;
             }
 
-            .checkout-progress {
-                gap: 8px;
-                font-size: 0.8rem;
+            .cart-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
             }
 
-            .progress-dot {
-                width: 28px;
-                height: 28px;
-                font-size: 0.75rem;
-            }
-
-            .progress-step span:not(.progress-dot) {
-                display: none;
-            }
-
-            .checkout-item {
-                grid-template-columns: 80px 1fr;
-                gap: 12px;
-            }
-
-            .checkout-item img {
-                width: 80px;
-                height: 80px;
-            }
-
-            .checkout-item-subtotal {
-                grid-column: 2;
-                text-align: left;
-                margin-top: 8px;
-            }
-
-            .checkout-summary {
+            .cart-summary {
                 flex-direction: column;
-                align-items: stretch;
+                padding: 20px;
             }
 
-            .checkout-total-section {
+            .cart-summary-actions {
+                width: 100%;
+            }
+
+            .cart-summary-actions .decom-button {
+                width: 100%;
+            }
+
+            .cart-summary-total {
+                width: 100%;
                 text-align: center;
             }
 
-            .checkout-actions {
-                width: 100%;
-                flex-direction: column-reverse;
-            }
-
-            .checkout-actions .decom-button {
+            .cart-summary-total .decom-button {
                 width: 100%;
             }
 
@@ -503,26 +428,8 @@
     <main class="decom-main">
         <div class="decom-container">
             <div class="section-header">
-                <h2>Checkout Review</h2>
-                <p>Confirm quantities before proceeding to payment</p>
-            </div>
-
-            <!-- Progress Indicator -->
-            <div class="checkout-progress">
-                <div class="progress-step">
-                    <span class="progress-dot">✓</span>
-                    <span>Cart</span>
-                </div>
-                <span class="progress-arrow">→</span>
-                <div class="progress-step active">
-                    <span class="progress-dot">2</span>
-                    <span>Review</span>
-                </div>
-                <span class="progress-arrow">→</span>
-                <div class="progress-step">
-                    <span class="progress-dot">3</span>
-                    <span>Payment</span>
-                </div>
+                <h2>Your Cart</h2>
+                <p>Review items before checkout</p>
             </div>
 
             <?php if ($this->session->flashdata('error')): ?>
@@ -532,13 +439,19 @@
                 </div>
             <?php endif; ?>
 
-            <?php if (!empty($cart)): ?>
-                <div class="checkout-card">
-                    <div class="checkout-items-header">
-                        Order Summary
-                    </div>
+            <?php if ($this->session->flashdata('success')): ?>
+                <div class="alert alert-success" role="alert">
+                    <span>✓</span>
+                    <?= $this->session->flashdata('success'); ?>
+                </div>
+            <?php endif; ?>
 
-                    <?php foreach ($cart as $item): ?>
+            <?php if (!empty($cartItems)): ?>
+                <?php $total = 0; ?>
+
+                <!-- GRID OF CART ITEMS -->
+                <div class="cart-grid">
+                    <?php foreach ($cartItems as $item): ?>
                         <?php
                         $name  = isset($item['product_name']) ? $item['product_name'] : ($item['name'] ?? 'Product');
                         $price = (float)($item['product_price'] ?? $item['price'] ?? 0);
@@ -546,41 +459,43 @@
                         $image = isset($item['product_image']) ? $item['product_image'] : ($item['image'] ?? '');
                         $image = $image ? base_url(ltrim($image, '/')) : base_url('Pictures/DeComponents.jpeg');
                         $subtotal = $price * $qty;
+                        $total += $subtotal;
                         ?>
-                        <div class="checkout-item">
-                            <div class="checkout-item-image">
+                        <div class="cart-card">
+                            <div class="cart-card-image-wrapper">
                                 <img src="<?= $image; ?>" alt="<?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>">
                             </div>
-                            <div class="checkout-item-details">
-                                <div class="checkout-item-name">
-                                    <?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>
-                                </div>
-                                <div class="checkout-item-meta">
-                                    <span class="checkout-item-price">₱<?= number_format($price, 2); ?></span>
-                                    <span class="checkout-item-quantity"><?= $qty; ?></span>
-                                </div>
+
+                            <div class="cart-card-title">
+                                <?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>
                             </div>
-                            <div class="checkout-item-subtotal">
+
+                            <div class="cart-card-meta">
+                                <span class="cart-card-price">₱<?= number_format($price, 2); ?></span>
+                                <span class="cart-card-quantity"><?= $qty; ?></span>
+                            </div>
+
+                            <div class="cart-card-subtotal">
                                 ₱<?= number_format($subtotal, 2); ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
+                </div>
 
-                    <div class="checkout-summary-divider"></div>
-
-                    <div class="checkout-summary">
+                <!-- SUMMARY + BUTTONS -->
+                <div class="cart-summary">
+                    <div class="cart-summary-actions">
                         <a class="decom-button decom-button--ghost" href="<?= site_url('products'); ?>">
-                            ← Back to Products
+                            ← Continue Shopping
                         </a>
-                        <div class="checkout-actions">
-                            <div class="checkout-total-section">
-                                <span class="checkout-total-label">Total Amount</span>
-                                <div class="checkout-total">₱<?= number_format((float)$total, 2); ?></div>
-                            </div>
-                            <a class="decom-button" href="<?= site_url('Decomponents/payment_form'); ?>">
-                                Proceed to Payment →
-                            </a>
-                        </div>
+                    </div>
+
+                    <div class="cart-summary-total">
+                        <span class="label">Total</span>
+                        <span class="amount">₱<?= number_format($total, 2); ?></span>
+                        <a class="decom-button" href="<?= site_url('Decomponents/checkout_review'); ?>">
+                            Proceed to Checkout →
+                        </a>
                     </div>
                 </div>
             <?php else: ?>

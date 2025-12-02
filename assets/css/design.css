@@ -179,7 +179,7 @@ button:focus,
     padding: 0;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .decom-nav-link {
@@ -197,6 +197,118 @@ button:focus,
     background: rgba(14, 165, 233, 0.08);
     color: #0f172a;
     border-color: var(--border);
+}
+
+.decom-nav-dropdown {
+    position: relative;
+}
+
+.decom-nav-dropdown button {
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+}
+
+.decom-nav-dropdown-menu {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    background: #fff;
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+    border-radius: var(--radius-md);
+    display: none;
+    min-width: 180px;
+    z-index: 60;
+}
+
+.decom-nav-dropdown:hover .decom-nav-dropdown-menu {
+    display: block;
+}
+
+.decom-nav-dropdown-menu a {
+    display: block;
+    padding: 10px 12px;
+    color: #0f172a;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.decom-nav-dropdown-menu a:hover {
+    background: rgba(14, 165, 233, 0.08);
+}
+
+.decom-user-meta {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.decom-cart-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #0ea5e9;
+    color: #fff;
+    font-size: 11px;
+    padding: 0 6px;
+}
+
+.decom-avatar-dropdown {
+    position: relative;
+}
+
+.decom-avatar-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 2px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.decom-avatar-btn img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.decom-avatar-menu {
+    position: absolute;
+    right: 0;
+    top: 110%;
+    background: #fff;
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+    border-radius: var(--radius-md);
+    display: none;
+    min-width: 200px;
+    padding: 10px 0;
+    z-index: 60;
+}
+
+.decom-avatar-dropdown:hover .decom-avatar-menu {
+    display: block;
+}
+
+.decom-avatar-menu a,
+.decom-avatar-name {
+    display: block;
+    padding: 10px 14px;
+    color: #0f172a;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.decom-avatar-menu a:hover {
+    background: rgba(14, 165, 233, 0.08);
 }
 
 .decom-button--ghost {
