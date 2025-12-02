@@ -18,6 +18,15 @@ const addToCartUrl = window.DE_ADD_TO_CART_URL || null;
 let products = [];
 let cart = [];
 let activeCategory = 'all';
+let activeCategoryLabel = 'All categories';
+let serverCartCount = typeof window !== 'undefined' && typeof window.DE_SERVER_CART_COUNT !== 'undefined'
+    ? parseInt(window.DE_SERVER_CART_COUNT, 10) || 0
+    : 0;
+
+const normalizeCategoryValue = (val) => {
+    if (!val) return 'all';
+    return String(val).toLowerCase().replace(/[^a-z0-9]/g, '') || 'all';
+};
 
 const toggleCart = () => {
     if (!body) return;
@@ -319,8 +328,8 @@ const syncCartItemToServer = (productId, quantity) => {
                 redirectGuestForLogin();
                 return;
             }
-            if (data && data.status === 'ok' && typeof data.cartCount !== 'undefined' && iconCartSpan) {
-                iconCartSpan.innerText = data.cartCount;
+            if (data && data.status === 'ok' && typeof data.cartCount !== 'undefined') {
+                updateCartBadges(data.cartCount);
             }
         })
         .catch(() => {
@@ -329,15 +338,15 @@ const syncCartItemToServer = (productId, quantity) => {
 };
 
 const getFilteredProducts = () => {
-    return activeCategory === 'all'
-        ? products
-        : products.filter(product => product.category === activeCategory);
+    if (activeCategory === 'all') return products;
+    return products.filter(product => (product.categorySlug || normalizeCategoryValue(product.category)) === activeCategory);
 };
 
 const updateCountLabel = (count) => {
     if (productCountLabel) {
         const suffix = count === 1 ? 'item' : 'items';
         productCountLabel.innerText = `Showing ${count} ${suffix}`;
+        productCountLabel.style.display = count > 0 ? 'block' : 'none';
     }
 };
 
@@ -445,13 +454,19 @@ const updateCartBadges = (count) => {
 };
 
 const addCartToHTML = () => {
-    if (!listCartHTML) return;
-    listCartHTML.innerHTML = '';
     let totalQuantity = 0;
+
+    if (listCartHTML) {
+        listCartHTML.innerHTML = '';
+    }
+
     if (cart.length > 0) {
         cart.forEach(item => {
             const qty = item.quantity || item.qty || 0;
-            totalQuantity = totalQuantity + qty;
+            totalQuantity += qty;
+
+            if (!listCartHTML) return;
+
             const positionProduct = products.findIndex((value) => value.id == item.product_id);
             if (positionProduct < 0) {
                 return;
@@ -477,6 +492,14 @@ const addCartToHTML = () => {
             listCartHTML.appendChild(newItem);
         });
     }
+
+    if (listCartHTML) {
+        // Clear and re-render only when listCartHTML exists
+        if (!cart.length) {
+            listCartHTML.innerHTML = '';
+        }
+    }
+
     updateCartBadges(totalQuantity);
 };
 
@@ -514,14 +537,29 @@ const changeQuantityCart = (product_id, type) => {
 
 const populateCategories = () => {
     if (!categoryFilter) return;
-    const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
-    categoryFilter.innerHTML = '<option value="all">All categories</option>' +
-        categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+    const options = [];
+    products.forEach(p => {
+        const label = p.category || 'General';
+        const value = p.categorySlug || normalizeCategoryValue(label);
+        options.push({ label, value });
+    });
+    const unique = [];
+    const seen = new Set();
+    options.forEach(opt => {
+        if (!seen.has(opt.value)) {
+            seen.add(opt.value);
+            unique.push(opt);
+        }
+    });
+    const optsHtml = ['<option value="all">All categories</option>'].concat(
+        unique.map(opt => `<option value="${opt.value}">${opt.label}</option>`)
+    );
+    categoryFilter.innerHTML = optsHtml.join('');
     categoryFilter.value = activeCategory;
 };
 
 const setActiveCategory = (category) => {
-    activeCategory = category || 'all';
+    activeCategory = normalizeCategoryValue(category || 'all');
     if (categoryFilter && categoryFilter.value !== activeCategory) {
         categoryFilter.value = activeCategory;
     }
@@ -557,10 +595,12 @@ const normalizeImage = (path) => {
 const normalizeProducts = (items) => {
     return items.map((item, index) => {
         const name = item.name || `Product ${index + 1}`;
+        const categoryLabel = item.category || item.category_name || 'General';
         return {
             ...item,
             name,
-            category: item.category || 'Misc',
+            category: categoryLabel,
+            categorySlug: normalizeCategoryValue(categoryLabel),
             description: item.description || `${name} is ready for your next build.`,
             image: normalizeImage(item.image),
         };
@@ -570,14 +610,16 @@ const normalizeProducts = (items) => {
 const initApp = () => {
     const loadCartFromStorage = () => {
         const cachedCart = localStorage.getItem('cart');
-        if (cachedCart) {
+
+        // If server says cart is empty, clear stale local cart
+        if (serverCartCount === 0 && cachedCart) {
+            localStorage.removeItem('cart');
+        } else if (cachedCart) {
             cart = JSON.parse(cachedCart);
-            addCartToHTML();
         }
-        // Ensure badge shows zero when nothing loaded
-        if (!cachedCart) {
-            updateCartBadges(0);
-        }
+
+        addCartToHTML();
+        updateCartBadges(cart.length ? cart.reduce((sum, item) => sum + (item.quantity || item.qty || 0), 0) : serverCartCount);
     };
 
     const resumeCheckoutAfterLogin = () => {

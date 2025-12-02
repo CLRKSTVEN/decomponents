@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 class Product_model extends CI_Model
 {
@@ -25,10 +25,6 @@ class Product_model extends CI_Model
             ->get()
             ->result_array();
     }
-
-    /**
-     * Fetch a single product by id.
-     */
     public function get_product($id)
     {
         if (!$this->db->table_exists('products')) {
@@ -36,10 +32,14 @@ class Product_model extends CI_Model
         }
 
         return $this->db
-            ->where('id', $id)
-            ->get('products')
+            ->select('p.*, c.name AS category_name, c.slug AS category_slug')
+            ->from('products p')
+            ->join('categories c', 'c.id = p.category_id', 'left')
+            ->where('p.id', (int)$id)
+            ->get()
             ->row_array();
     }
+
 
     /**
      * Fetch products by category slug (e.g., menswear, womenswear).
@@ -56,7 +56,18 @@ class Product_model extends CI_Model
         }
 
         return $this->db
-            ->select('p.id, p.name, p.slug, p.description, p.price, p.image, p.is_featured, p.inventory, c.slug as category_slug')
+            ->select('
+    p.id,
+    p.name,
+    p.slug,
+    p.description,
+    p.price,
+    p.image,
+    p.is_featured,
+    p.inventory,
+    c.name AS category_name,
+    c.slug AS category_slug
+')
             ->from('products p')
             ->join('categories c', 'c.id = p.category_id', 'left')
             ->where('c.slug', $slug)
@@ -135,7 +146,18 @@ class Product_model extends CI_Model
         }
 
         return $this->db
-            ->select('p.id, p.name, p.slug, p.description, p.price, p.image, p.is_featured, p.inventory, c.slug as category_slug')
+            ->select('
+    p.id,
+    p.name,
+    p.slug,
+    p.description,
+    p.price,
+    p.image,
+    p.is_featured,
+    p.inventory,
+    c.name AS category_name,
+    c.slug AS category_slug
+')
             ->from('products p')
             ->join('categories c', 'c.id = p.category_id', 'left')
             ->where('c.slug', $slug)

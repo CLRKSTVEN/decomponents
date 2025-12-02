@@ -11,8 +11,14 @@ $userLevel = strtolower((string)$this->session->userdata('level'));
 $avatar    = $this->session->userdata('ez_user_avatar') ?: 'upload/profile/avatar.png';
 $cartCount = 0;
 $cart      = $this->session->userdata('ez_cart') ?? [];
-foreach ($cart as $item) {
-    $cartCount += (int)($item['qty'] ?? $item['quantity'] ?? 1);
+if (is_array($cart) && count($cart) > 0) {
+    foreach ($cart as $item) {
+        if (is_array($item) && isset($item['qty'])) {
+            $cartCount += (int)$item['qty'];
+        } elseif (is_array($item) && isset($item['quantity'])) {
+            $cartCount += (int)$item['quantity'];
+        }
+    }
 }
 ?>
 
@@ -143,6 +149,13 @@ foreach ($cart as $item) {
     }
 
     .decom-nav-dropdown:hover .decom-nav-dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    /* Support click/tap to open dropdowns (accessibility for touch devices) */
+    .decom-nav-dropdown.open .decom-nav-dropdown-menu {
         opacity: 1;
         visibility: visible;
         transform: translateX(-50%) translateY(0);
@@ -512,9 +525,7 @@ foreach ($cart as $item) {
             <a href="<?= site_url('Decomponents/cart'); ?>" class="decom-cart-button">
                 <span class="decom-cart-icon">🛒</span>
                 <span>Cart</span>
-                <?php if ($cartCount > 0): ?>
-                    <span class="decom-cart-badge"><?= $cartCount; ?></span>
-                <?php endif; ?>
+                <span class="decom-cart-badge" data-cart-count="<?= (int)$cartCount; ?>"><?= (int)$cartCount; ?></span>
             </a>
 
             <!-- User Menu -->
@@ -594,4 +605,67 @@ foreach ($cart as $item) {
             nav.classList.remove('mobile-active');
         }
     });
+
+    // Dropdown click / tap support (accessibility for touch devices)
+    (function() {
+        const dropdowns = document.querySelectorAll('.decom-nav-dropdown');
+
+        // Toggle open class on button click
+        dropdowns.forEach(drop => {
+            const btn = drop.querySelector('button');
+            if (!btn) return;
+            btn.addEventListener('click', function(ev) {
+                ev.preventDefault();
+                // Close other open dropdowns
+                dropdowns.forEach(d => d.classList.remove('open'));
+                drop.classList.toggle('open');
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(ev) {
+            const inside = ev.target.closest && ev.target.closest('.decom-nav-dropdown');
+            if (!inside) {
+                dropdowns.forEach(d => d.classList.remove('open'));
+            }
+        });
+
+        // Close on ESC
+        document.addEventListener('keydown', function(ev) {
+            if (ev.key === 'Escape' || ev.key === 'Esc') {
+                dropdowns.forEach(d => d.classList.remove('open'));
+            }
+        });
+    })();
+
+    // Sync cart badge with localStorage and server count
+    (function() {
+        var badge = document.querySelector('.decom-cart-badge');
+        var iconSpan = document.querySelector('.icon-cart span');
+        if (!badge) return;
+        var serverCount = parseInt(badge.getAttribute('data-cart-count') || '0', 10) || 0;
+        var count = serverCount;
+        try {
+            var storedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+            if (Array.isArray(storedCart)) {
+                var storedCount = storedCart.reduce(function(sum, item) {
+                    return sum + (parseInt(item.quantity || item.qty || 0, 10) || 0);
+                }, 0);
+                // If server is empty but local has stale items, clear local.
+                if (serverCount === 0 && storedCount > 0) {
+                    localStorage.removeItem('cart');
+                    count = 0;
+                } else if (serverCount > 0) {
+                    // Prefer server count when available to avoid inflated badge.
+                    count = serverCount;
+                } else {
+                    count = storedCount;
+                }
+            }
+        } catch (e) {}
+        badge.innerText = count;
+        if (iconSpan) {
+            iconSpan.innerText = count;
+        }
+    })();
 </script>

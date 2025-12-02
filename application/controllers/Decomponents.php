@@ -512,52 +512,21 @@ class Decomponents extends CI_Controller
         ];
         $this->load->view('decomponents/visitor', $data);
     }
-
     // 1) LANDING PAGE: http://localhost/decomponents/
     public function index()
     {
         $this->redirect_admin_to_dashboard();
 
+        // Get all products with their categories
         $featured = $this->Product_model->get_all_with_categories();
 
-        // If DB has few items, supplement with filesystem scan so the grid stays full.
-        if (count($featured) < 8) {
-            $map = [
-                ['slug' => 'menswear', 'folder' => 'MensClothing',     'category' => 'Menswear'],
-                ['slug' => 'womenswear', 'folder' => 'WomensClothing', 'category' => 'Womenswear'],
-                ['slug' => 'accessories', 'folder' => 'Products',      'category' => 'Accessories'],
-                ['slug' => 'footwear', 'folder' => 'Shoes',            'category' => 'Footwear'],
-            ];
-
-            foreach ($map as $meta) {
-                $basePath = FCPATH . 'Products/' . $meta['folder'] . '/';
-                if (!is_dir($basePath)) {
-                    continue;
-                }
-                $files = directory_map($basePath, 1);
-                if (!is_array($files)) continue;
-                foreach ($files as $file) {
-                    if (!is_string($file) || !preg_match('/\.(jpe?g|png|webp|gif)$/i', $file)) {
-                        continue;
-                    }
-                    $name = pathinfo($file, PATHINFO_FILENAME);
-                    $featured[] = [
-                        'id'            => 'fs_' . $name,
-                        'name'          => $name,
-                        'slug'          => $name,
-                        'description'   => '',
-                        'price'         => rand(999, 2999),
-                        'image'         => 'Products/' . $meta['folder'] . '/' . $file,
-                        'is_featured'   => 0,
-                        'inventory'     => 0,
-                        'category_slug' => $meta['slug'],
-                    ];
-                }
-            }
+        // Randomize a bit so the landing page feels fresh each time (optional)
+        if (is_array($featured) && count($featured) > 1) {
+            shuffle($featured);
         }
 
         // Show only 8 items on the landing featured grid.
-        if (count($featured) > 8) {
+        if (is_array($featured) && count($featured) > 8) {
             $featured = array_slice($featured, 0, 8);
         }
 
@@ -565,137 +534,107 @@ class Decomponents extends CI_Controller
             'page_title'       => 'Welcome to DeComponents',
             'featuredProducts' => $featured,
         ];
+
         $this->load->view('decomponents/landing', $data);
     }
-
     // 2) SHOP PAGE (PRODUCT GRID)
-    public function shop($category = 'women')
+    public function shop($category = 'all')
     {
         // Admins should manage via dashboard, not browse shop UI.
         $this->redirect_admin_to_dashboard();
 
-        $category = strtolower($category);
-        $map = [
-            'women' => [
-                'folder' => 'WomensClothing',
-                'title'  => "Women's Collection",
-                'empty'  => 'Products/WomensClothing',
-                'slug'   => 'womenswear',
-            ],
-            'men' => [
-                'folder' => 'MensClothing',
-                'title'  => "Men's Collection",
-                'empty'  => 'Products/MensClothing',
-                'slug'   => 'menswear',
-            ],
-            'shoes' => [
-                'folder' => 'Shoes',
-                'title'  => 'Shoes',
-                'empty'  => 'Products/Shoes',
-                'slug'   => 'footwear',
-            ],
-            'accessories' => [
-                'folder' => 'Accessories',
-                'title'  => 'Accessories & Watches',
-                'empty'  => 'Products/Accessories',
-                'slug'   => 'accessories',
-            ],
-            'bottoms' => [
-                'folder' => 'WomensBottom',
-                'title'  => 'Bottoms',
-                'empty'  => 'Products/WomensBottom',
-                'slug'   => 'womenswear',
-            ],
-            'others' => [
-                'folder' => 'Products',
-                'title'  => 'Tops & Tees',
-                'empty'  => 'Products',
-                'slug'   => 'womenswear',
-            ],
+        $category = strtolower((string)$category);
+
+        // Allowed category slugs from DB (you can add more here later)
+        $allowedCategories = [
+            'all'               => 'All Components',
+            'imported-components' => 'Imported Components',
+            'cpu'               => 'Central Processor Unit (CPU)',
+            'gpu'               => 'Graphics Cards (GPU)',
+            'power-supply'      => 'Power Supplies',
         ];
 
-        // default to women if invalid
-        if (!isset($map[$category])) {
-            $category = 'women';
+        // If invalid segment is passed, default to "all"
+        if (!array_key_exists($category, $allowedCategories)) {
+            $category = 'all';
         }
 
-        $products = [];
-        $page     = max(1, (int)$this->input->get('page'));
-        $perPage  = 12;
-        $total    = 0;
+        // Pull ALL products with categories once
+        $allProducts = $this->Product_model->get_all_with_categories();
+        if (!is_array($allProducts)) {
+            $allProducts = [];
+        }
 
-        // Prefer database-backed products; fall back to filesystem scan if none exist yet.
-        $slug       = $map[$category]['slug'] ?? null;
-        $dbProducts = $slug ? $this->Product_model->get_products_by_category_slug_paginated($slug, $perPage, ($page - 1) * $perPage) : [];
-        $total      = $slug ? $this->Product_model->count_by_category_slug($slug) : 0;
-
-        if (!empty($dbProducts) || $total > 0) {
-            // Clamp page to max pages for DB results
-            $totalPages = $perPage > 0 ? (int)ceil($total / $perPage) : 1;
-            if ($totalPages < 1) {
-                $totalPages = 1;
-            }
-            if ($page > $totalPages) {
-                $page = $totalPages;
-                $dbProducts = $slug ? $this->Product_model->get_products_by_category_slug_paginated($slug, $perPage, ($page - 1) * $perPage) : [];
-            }
-
-            foreach ($dbProducts as $row) {
-                $products[] = [
-                    'id'          => $row['id'],
-                    'name'        => $row['name'] ?: ($row['slug'] ?? 'Product'),
-                    'slug'        => $row['slug'] ?? '',
-                    'price'       => (float)($row['price'] ?? 0),
-                    'image'       => $row['image'] ?: 'Products/Logo.jpg',
-                    'description' => $row['description'] ?? '',
-                ];
-            }
+        // Filter by category slug (if not "all")
+        $filtered = [];
+        if ($category === 'all') {
+            $filtered = $allProducts;
         } else {
-            $folder   = $map[$category]['folder'];
-            $basePath = FCPATH . 'Products/' . $folder . '/';
-            $files    = is_dir($basePath) ? directory_map($basePath, 1) : [];
-
-            $fallback = [];
-            if (is_array($files)) {
-                foreach ($files as $file) {
-                    if (is_string($file) && preg_match('/\.(jpe?g|png|webp|gif)$/i', $file)) {
-                        $fileName = pathinfo($file, PATHINFO_FILENAME);
-                        $fallback[] = [
-                            'id'          => $fileName,
-                            'name'        => $fileName,
-                            'slug'        => $fileName,
-                            'price'       => rand(399, 1999), // temp
-                            'image'       => 'Products/' . $folder . '/' . $file,
-                            'description' => '',
-                        ];
-                    }
+            foreach ($allProducts as $row) {
+                // Expecting 'category_slug' from get_all_with_categories join
+                $rowSlug = isset($row['category_slug']) ? strtolower($row['category_slug']) : '';
+                if ($rowSlug === $category) {
+                    $filtered[] = $row;
                 }
             }
-            $total    = count($fallback);
-            $totalPages = $perPage > 0 ? (int)ceil($total / $perPage) : 1;
-            if ($totalPages < 1) {
-                $totalPages = 1;
-            }
-            if ($page > $totalPages) {
-                $page = $totalPages;
-            }
-            $offset   = ($page - 1) * $perPage;
-            $products = array_slice($fallback, $offset, $perPage);
         }
 
+        // Basic pagination
+        $page    = max(1, (int)$this->input->get('page'));
+        $perPage = 12;
+        $total   = count($filtered);
+
+        $totalPages = $perPage > 0 ? (int)ceil($total / $perPage) : 1;
+        if ($totalPages < 1) {
+            $totalPages = 1;
+        }
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
+
+        $offset       = ($page - 1) * $perPage;
+        $pagedProducts = array_slice($filtered, $offset, $perPage);
+
+        // Normalize for the view (id, name, slug, price, image, description)
+        $products = [];
+        $normalizeImg = function ($path) {
+            if (!$path) {
+                return base_url('Pictures/DeComponents.jpeg');
+            }
+            if (preg_match('#^https?://#i', $path) || strpos($path, '//') === 0) {
+                return $path;
+            }
+            return base_url(ltrim($path, '/'));
+        };
+        foreach ($pagedProducts as $row) {
+            $products[] = [
+                'id'          => $row['id'] ?? null,
+                'name'        => $row['name'] ?: ($row['slug'] ?? 'Product'),
+                'slug'        => $row['slug'] ?? '',
+                'price'       => isset($row['price']) ? (float)$row['price'] : 0,
+                'image'       => $normalizeImg(!empty($row['image']) ? $row['image'] : 'Pictures/DeComponents.jpeg'),
+                'description' => $row['description'] ?? '',
+            ];
+        }
+
+        // Cart counter from session
+        $cart = $this->session->userdata('ez_cart') ?? [];
         $cartCount = 0;
-        $cart      = $this->session->userdata('ez_cart') ?? [];
         foreach ($cart as $item) {
             $cartCount += (int)($item['qty'] ?? 1);
         }
 
+        // Human-friendly category title
+        $categoryTitle = $allowedCategories[$category] ?? 'All Components';
+
         $data = [
-            'page_title'    => 'DeComponents ' . $map[$category]['title'],
+            'page_title'    => 'DeComponents - ' . $categoryTitle,
             'products'      => $products,
             'cartCount'     => $cartCount,
             'category'      => $category,
-            'categoryTitle' => $map[$category]['title'],
-            'emptyPath'     => $map[$category]['empty'],
+            'categoryTitle' => $categoryTitle,
+            // no more clothing folders / emptyPath — but keep the key if your view expects it
+            'emptyPath'     => '',
             'currentPage'   => $page,
             'perPage'       => $perPage,
             'totalItems'    => $total,
@@ -711,6 +650,8 @@ class Decomponents extends CI_Controller
         // Use the public products view so customers can browse and checkout.
         $this->load->view('pages/Products', $data);
     }
+
+
 
     /**
      * Admin dashboard.
@@ -926,7 +867,7 @@ class Decomponents extends CI_Controller
 
         $data = [
             'page_title'  => 'Testimonials',
-            'testimonials'=> $this->Testimonials_model->all(),
+            'testimonials' => $this->Testimonials_model->all(),
             'edit'        => $edit,
         ];
 
@@ -1644,22 +1585,22 @@ class Decomponents extends CI_Controller
             $qty = 1;
         }
 
-        // Prefer canonical product data from DB
+        // Prefer canonical product data from DB and REQUIRE it
         if ($id) {
             $dbProduct = $this->Product_model->get_product($id);
             if ($dbProduct) {
                 $name  = $dbProduct['name'] ?? $name;
                 $price = (float)($dbProduct['price'] ?? $price);
                 $image = $dbProduct['image'] ?? $image;
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Product not found.']);
+                return;
             }
-        }
-
-        // Basic validation
-        if (!$id || !$name || !$price) {
-            header('Content-Type: application/json');
-            echo json_encode(['status' => 'error', 'message' => 'Invalid product data.']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid product id.']);
             return;
         }
+
 
         // Get existing cart from session, or empty array
         $cart = $this->session->userdata('ez_cart');
@@ -1687,54 +1628,6 @@ class Decomponents extends CI_Controller
         $count = 0;
         foreach ($cart as $item) {
             $count += (int)$item['qty'];
-        }
-
-        // Persist a cart entry as a lightweight order record only for logged-in users.
-        // Guests keep cart in session only; avoid creating DB rows for anonymous activity.
-        // Swallow DB errors so add_to_cart never 500s on mismatched schemas.
-        $orderSaved = true;
-        if ($id && $userId) {
-            try {
-                $orderId = $this->Decomponents_model->create_order([
-                    'user_id'          => $userId,
-                    'full_name'        => is_object($user) ? ($user->fullname ?? '') : '',
-                    'email'            => is_object($user) ? ($user->email ?? '') : '',
-                    'shipping_address' => '',
-                    'payment_method'   => 'cod',      // valid enum value
-                    'status'           => 'pending',  // valid enum value
-                    'quantity'         => $qty,
-                    'total_amount'     => $price,
-                    'created_at'       => date('Y-m-d H:i:s'),
-                ]);
-                $orderSaved = (bool)$orderId;
-                if ($orderSaved && $this->db->table_exists('order_items')) {
-                    $this->Decomponents_model->add_order_item($orderId, $id, $qty, $price);
-                }
-            } catch (\Throwable $e) {
-                log_message('error', 'add_to_cart order save failed: ' . $e->getMessage());
-                $orderSaved = false;
-            }
-        }
-
-        if (!$orderSaved) {
-            // Roll back session cart change if DB insert failed so counts stay accurate.
-            if (isset($cart[$id]) && $cart[$id]['qty'] > 1) {
-                $cart[$id]['qty']--;
-            } else {
-                unset($cart[$id]);
-            }
-            $this->session->set_userdata('ez_cart', $cart);
-            $count = 0;
-            foreach ($cart as $item) {
-                $count += (int)$item['qty'];
-            }
-            header('Content-Type: application/json');
-            echo json_encode([
-                'status'    => 'error',
-                'message'   => 'Could not save cart item. Please try again.',
-                'cartCount' => $count
-            ]);
-            return;
         }
 
         header('Content-Type: application/json');
@@ -1881,7 +1774,9 @@ class Decomponents extends CI_Controller
             'shipping_address' => $address,
             'payment_method'   => $pay_method,
             'status'           => 'pending',
-            'quantity'         => 0,
+            'quantity'         => array_sum(array_map(function ($i) {
+                return (int)($i['qty'] ?? $i['quantity'] ?? 0);
+            }, $cart)),
             'total_amount'     => $total,
             'created_at'       => date('Y-m-d H:i:s'),
         ];
@@ -2064,5 +1959,11 @@ class Decomponents extends CI_Controller
         $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode($payload));
+    }
+    public function clear_cart()
+    {
+        $this->session->set_userdata('ez_cart', []);
+        $this->session->set_flashdata('success', 'Cart cleared.');
+        redirect('Decomponents/shop');
     }
 }
