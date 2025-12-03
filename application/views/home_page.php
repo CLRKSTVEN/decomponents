@@ -308,6 +308,12 @@ $subhead   = !empty($loginVisual['subheadline']) ? $loginVisual['subheadline'] :
                   Create one here
                 </a>
               </div>
+              <div class="login-footer-text">
+                Just browsing?
+                <a href="<?= site_url(); ?>">
+                  Go back to store
+                </a>
+              </div>
 
             </div>
           </div>
