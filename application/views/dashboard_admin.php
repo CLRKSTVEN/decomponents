@@ -156,7 +156,7 @@
             <!-- KPIs -->
             <section class="kpi-grid">
                 <div class="kpi-card">
-                    <div class="kpi-icon" style="background:#0ea5e9;">
+                    <div class="kpi-icon" style="background:var(--accent);color:#fff;">
                         <i class="bi bi-box-seam"></i>
                     </div>
                     <div class="kpi-meta">
@@ -166,7 +166,7 @@
                 </div>
 
                 <div class="kpi-card">
-                    <div class="kpi-icon" style="background:#10b981;">
+                    <div class="kpi-icon" style="background:var(--accent-2);color:#fff;">
                         <i class="bi bi-receipt"></i>
                     </div>
                     <div class="kpi-meta">
@@ -176,7 +176,7 @@
                 </div>
 
                 <div class="kpi-card">
-                    <div class="kpi-icon" style="background:#f59e0b;">
+                    <div class="kpi-icon" style="background:#dbeafe;color:#0f172a;">
                         <i class="bi bi-clock-history"></i>
                     </div>
                     <div class="kpi-meta">
@@ -186,7 +186,7 @@
                 </div>
 
                 <div class="kpi-card">
-                    <div class="kpi-icon" style="background:#3b82f6;">
+                    <div class="kpi-icon" style="background:#a7f3d0;color:#065f46;">
                         <i class="bi bi-people"></i>
                     </div>
                     <div class="kpi-meta">
@@ -293,7 +293,7 @@
                         <?= (int)$pie['fulfilled']; ?>,
                         <?= (int)$pie['cancelled']; ?>
                     ],
-                    backgroundColor: ['#f59e0b', '#10b981', '#3b82f6', '#9ca3af'],
+                    backgroundColor: ['#93c5fd', '#2563eb', '#10b981', '#cbd5e1'],
                     borderWidth: 0
                 }]
             };
@@ -333,7 +333,7 @@
                     datasets: [{
                         label: 'Qty Sold',
                         data: values,
-                        backgroundColor: '#0ea5e9'
+                        backgroundColor: '#2563eb'
                     }]
                 },
                 options: {
