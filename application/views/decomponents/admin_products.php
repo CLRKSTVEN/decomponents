@@ -17,100 +17,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --ink: #0f172a;
-            --muted: #64748b;
-            --accent: #0ea5e9;
-            --accent-2: #14b8a6;
-            --surface: #f4f6fb;
-            --card: #ffffff;
-            --shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
-        }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            background: var(--surface);
-            color: var(--ink);
-            font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        a { text-decoration: none; color: inherit; }
-        .page-shell { min-height: 100vh; }
-        .dash-nav {
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            padding: 16px 3rem;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            justify-content: space-between;
-            background: rgba(244, 246, 251, 0.92);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 800;
-            letter-spacing: 0.3px;
-        }
-        .brand-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            display: grid;
-            place-items: center;
-            color: #fff;
-            box-shadow: var(--shadow);
-        }
-        .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
-        .nav-pill {
-            padding: 9px 13px;
-            border-radius: 12px;
-            font-weight: 700;
-            color: var(--muted);
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
-        }
-        .nav-pill:hover,
-        .nav-pill.active {
-            background: #fff;
-            border-color: rgba(148, 163, 184, 0.3);
-            color: var(--ink);
-            box-shadow: var(--shadow);
-        }
-        .nav-actions { display: flex; align-items: center; gap: 10px; }
-        .hero {
-            margin: 18px 3rem 0;
-            background: linear-gradient(120deg, var(--accent), var(--accent-2));
-            color: #fff;
-            padding: 28px 32px;
-            border-radius: 22px;
-            box-shadow: var(--shadow);
-        }
-        .hero h1 { margin: 0 0 6px; font-weight: 800; }
-        .hero p { margin: 0; color: rgba(255,255,255,0.86); max-width: 720px; }
-        .container-wide { padding: 22px 3rem 3rem; }
-        .card {
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            box-shadow: var(--shadow);
-            border-radius: 18px;
-        }
-        .table thead th { border-top: none; font-weight: 800; }
-        .badge-soft {
-            padding: 6px 10px;
-            border-radius: 10px;
-            font-weight: 700;
-        }
-        @media (max-width: 991px) {
-            .dash-nav, .hero, .container-wide { padding-left: 18px; padding-right: 18px; }
-            .dash-nav { flex-direction: column; align-items: flex-start; }
-            .nav-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
-        }
-    </style>
+    <link href="<?= base_url(); ?>assets/css/admin-ui.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
@@ -165,7 +72,7 @@
 
         <header class="hero">
             <h1>Product catalog</h1>
-            <p>Create, edit, and curate the items that appear in your store. Modal opens for new or existing items.</p>
+            <p>Add or edit catalog items with the modal for quick changes. Keep names, pricing, and stock aligned.</p>
         </header>
 
         <div class="container-wide">
